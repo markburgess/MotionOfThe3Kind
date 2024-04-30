@@ -59,3 +59,15 @@ There are different models of virtual propagation for waves and particles
 5. ShortSource_PhaseWaves.go - a linear Schrodinger type wave with single/double
                       slits in which the waves are generated before the slits and
                       have to find their way through (already biased direction)
+-----------------------
+
+To plot the screen graphs, use gnuplot, e.g.
+
+$ gnuplot
+gnuplot> plot "LongSourceSlits_DS" with line
+
+or as pdf
+
+$ gnuplot
+gnuplot> set output "alignment_spectrum.pdf"
+gnuplot> plot "LongSourceSlits_DS" with line

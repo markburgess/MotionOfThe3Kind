@@ -1,0 +1,61 @@
+
+This repository contains a number of test models and a library of shared code under 
+pkg/Cellibrium designed to illustrate the principles of virtual motion in Semantic Spacetime.
+
+Because this uses parallelism of the computer, the results might depend on how many CPU cores
+your computer has!
+--------------------------------------------------------------------------------------
+To run the code you need a Golang environment, and you need to incorporate the package Cellibrium
+in your GOPATH. Some of the models that look at interference can be run in eiither
+ "single slit" or "double slit" mode, by using command line arguments. e.g.
+
+  go run PlaneSource_PhaseWaves.go ds
+  go run PlaneSource_PhaseWaves.go ss
+
+use CTRL-C to stop the execution.
+
+For slit experimemts, the programs save the screen image of the simulations as files
+in the directory of execution, MODEL_NAME_DS, MODEL_NAME_SS, etc
+
+To view the results, make a wide text/command window with a SMALL fixed width font.
+--------------------------------------------------------------------------------------
+Principle: all these models are "Promise Theoretic" agent models, effectively
+cellular automata in which each agent has its own interior timeline running in
+parallel threads. i.e. there is no synchronisation of updates. Any coherence has
+to be arranged through the interactions. 
+
+a) Each agent affects only its own state in the way it chooses.
+b) Each agent promises to share its state with its neighbours.
+c) The consequence of (a) is no ballistic "push" models, only 
+   local "voluntary cooperation".
+--------------------------------------------------------------------------------------
+
+There are different models of virtual propagation for waves and particles
+
+1. PassTheParcel.go - this is conservation "money transfer" algorithm 
+                      that ensures conservation. It has no wave solutions,
+                      only diffusion of ballistic random walk objects.
+                      The number of counters is shown in each location.
+                      This is the only way to ensure conservation of counters 
+                      formally in a discrete model. Even so, the actual
+                      number of objects fluctuates since the observer cannot
+                      guarantee to see what is between agents consistently.
+
+2. Waves.go         - a proof of concept showing unconstrained waves radiating 
+                      outward from a source. You can choose (by editing) whether
+                      to use type I or type II waves, as well as selecting the 
+                      effective wavelength. All these things make a difference to
+                      the results.
+
+3. ExteriorRestoringForce.go - a classical wave equation model in which
+                      an exterior field osciallates due to a restoring
+                      force that makes the acceleration oppose the 
+                      direction of displacement via velocity of some
+                      exterior medium.
+
+4. PlaneSource_PhaseWaves.go - a linear Schrodinger type wave with single/double
+                      slits in which the slits are effective symmetrical sources.
+
+5. ShortSource_PhaseWaves.go - a linear Schrodinger type wave with single/double
+                      slits in which the waves are generated before the slits and
+                      have to find their way through (already biased direction)

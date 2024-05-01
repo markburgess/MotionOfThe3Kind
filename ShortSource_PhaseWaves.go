@@ -23,7 +23,6 @@ import (
 // **********************************************************
 
 const DoF = 1000
-const MAXTIME = 100000
 const wrange = 100
 const PERIOD = C.WAVELENGTH * wrange
 
@@ -121,10 +120,12 @@ func main () {
 
 	C.Initialize(st,DoF)
 
-	C.ShowState(st,1,37,76)
+	C.ShowState(st,1,37,76,"+")
 	EquilGuideRail()
-	C.ShowState(st,MAXTIME,37,76)	
-	//C.ShowPhase(st,MAXTIME,37,76)
+	//C.ShowState(st,C.MAXTIME,37,76,"+")
+	//C.ShowPhase(st,C.MAXTIME,37,76)
+	go C.MovingPromise()
+	C.ShowPosition(st,C.MAXTIME,37,76)
 }
 
 // ****************************************************************
@@ -159,7 +160,7 @@ func UpdateAgent_Flow(agent int) {
 
 	C.CausalIndependence(true)
 
-	for t := 0; t < MAXTIME; t++ {
+	for t := 0; t < C.MAXTIME; t++ {
 		
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
 		// Messages persist until they are read and cannot unseen

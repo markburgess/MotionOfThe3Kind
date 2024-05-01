@@ -24,7 +24,6 @@ import (
 // **********************************************************
 
 const DoF = 10000
-const MAXTIME = 100000
 const wrange = 100
 const PERIOD = C.WAVELENGTH * wrange
 
@@ -122,12 +121,11 @@ func main () {
 
 	C.Initialize(st,DoF)
 
-	C.ShowState(st,1,37,76)
+	C.ShowState(st,1,37,76,"+")
 	EquilGuideRail()
-	//go MovingPromise()
-	//C.ShowState(st,MAXTIME,37,76)
-	C.ShowPhase(st,MAXTIME,37,76)
-	//C.ShowPosition(st,MAXTIME,37,76)
+	C.ShowState(st,C.MAXTIME,37,76,"+")
+	//go C.MovingPromise()
+	//C.ShowPhase(st,C.MAXTIME,37,76)
 }
 
 // ****************************************************************
@@ -163,7 +161,7 @@ func UpdateAgent_Flow(agent int) {
 
 	C.CausalIndependence(true)
 
-	for t := 0; t < MAXTIME; t++ {
+	for t := 0; t < C.MAXTIME; t++ {
 		
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
 		// Messages persist until they are read and cannot unseen
@@ -259,60 +257,4 @@ func dPsi(agent C.STAgent) int { // Laplacian
 	return dpsi
 }
 
-// ****************************************************************
-
-func MovingPromise() {
-
-	C.CausalIndependence(true) // some noise
-	C.CausalIndependence(true) // some noise
-	C.CausalIndependence(true) // some noise
-
-	for t := 0; t < MAXTIME; t++ {
-
-		C.CausalIndependence(true) // some noise
-		C.CausalIndependence(true) // some noise
-		C.CausalIndependence(true) // some noise
-		Transition()
-
-		if t % 200 == 0 {
-			C.POSITION = C.FIRSTPOSITION
-		}
-
-	}
-}
-
-// ****************************************************************
-
-func Transition() {
-
-	location := C.AGENT[C.POSITION] // the single privileged location promise
-
-	//var peak int
-	var selection int = -1
-	var direction int = -1
-
-	for di := 0; di < C.N; di++ {		
-
-		if location.Neigh[di] == 0 {
-			continue
-		}
-
-		av := (location.V[di] + location.Psi)/2
-
-		if av != 0 {
-			grad := 2*(location.V[di] - location.Psi)/av
-			if grad < selection {
-				selection = grad
-				direction = di
-			}
-		}
-
-	}
-
-	if direction >= 0 {
-		C.POSITION = location.Neigh[direction]
-	}
-	return
-
-}
 

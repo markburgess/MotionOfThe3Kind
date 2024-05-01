@@ -235,4 +235,3 @@ func dPsi(agent C.STAgent) int { // Laplacian
 
 	return dpsi
 }
-

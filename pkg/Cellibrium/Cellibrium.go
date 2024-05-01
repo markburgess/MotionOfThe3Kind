@@ -15,6 +15,7 @@ const Xlim = 37
 const Ylim = 76
 const Adim = Xlim * Ylim
 const base_timescale = 15  // smaller is faster
+const MAXTIME = 100000
 
 var   DOUBLE_SLIT bool = false
 const WAVECHAR = "uuuu0000dddd0000"
@@ -164,9 +165,73 @@ func InitAgentGeomAndAdj(x,y int,amplitude int) {
 
 // ****************************************************************
 
-func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int) {
+func MovingPromise() {
+
+	CausalIndependence(true) // some noise
+	CausalIndependence(true) // some noise
+	CausalIndependence(true) // some noise
+
+	for t := 0; t < MAXTIME; t++ {
+
+		CausalIndependence(true) // some noise
+		CausalIndependence(true) // some noise
+		CausalIndependence(true) // some noise
+		Transition()
+
+		if t % 200 == 0 {
+			POSITION = FIRSTPOSITION
+		}
+
+	}
+}
+
+// ****************************************************************
+
+func Transition() {
+
+	location := AGENT[POSITION] // the single privileged location promise
+
+	//var peak int
+	var selection int = -1
+	var direction int = -1
+
+	for di := 0; di < N; di++ {		
+
+		if location.Neigh[di] == 0 {
+			continue
+		}
+
+		av := (location.V[di] + location.Psi)/2
+
+		if av != 0 {
+			grad := 2*(location.V[di] - location.Psi)/av
+			if grad < selection {
+				selection = grad
+				direction = di
+			}
+		}
+
+	}
+
+	if direction >= 0 {
+		POSITION = location.Neigh[direction]
+	}
+	return
+
+}
+
+// ****************************************************************
+
+func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 	
 	var screen [Ylim]float64
+	var fieldwidth,numwidth string
+
+	switch mode {
+	case "+": fieldwidth = fmt.Sprintf("%c%ds",'%',3)
+	default:  fieldwidth = fmt.Sprintf("%c%ds",'%',6)
+		numwidth = fmt.Sprintf("%c%dd",'%',6)
+	}
 
 	for t := 1; t < tmax; t++ {
 		
@@ -194,18 +259,21 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int) {
   
 					if observable != 0 {
 
-						if observable > 0 {
-							fmt.Printf("%3s","+")
+						if mode == "+" {
+							if observable > 0 {
+								fmt.Printf(fieldwidth,"+")
+							} else {
+								fmt.Printf(fieldwidth,"-")
+							}
 						} else {
-							fmt.Printf("%3s","-")
+							fmt.Printf(numwidth,observable)
 						}
-						//fmt.Printf("%13d",observable)
 					} else {
-						fmt.Printf("%3s",".")
+						fmt.Printf(fieldwidth,".")
 					}
 					
 				} else {
-					fmt.Printf("%3s"," ")
+					fmt.Printf(fieldwidth," ")
 				}
 			}
 			
@@ -251,12 +319,6 @@ func ShowPhase(st_rows [Ylim]string,tmax,xlim,ylim int) {
 					}
   
 					if observable != 0 {
-
-						/*if WAVE[observable] > 0 {
-							fmt.Printf("%3s","P")
-						} else {
-							fmt.Printf("%3s","n")
-						}*/
 						fmt.Printf("%6d",observable)
 					} else {
 						fmt.Printf("%6s",".")

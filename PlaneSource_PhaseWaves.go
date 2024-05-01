@@ -25,6 +25,8 @@ import (
 
 const DoF = 10000
 const MAXTIME = 100000
+const wrange = 100
+const PERIOD = C.WAVELENGTH * wrange
 
 // ****************************************************************
 
@@ -123,8 +125,8 @@ func main () {
 	C.ShowState(st,1,37,76)
 	EquilGuideRail()
 	//go MovingPromise()
-	C.ShowState(st,MAXTIME,37,76)
-	//C.ShowPhase(st,MAXTIME,37,76)
+	//C.ShowState(st,MAXTIME,37,76)
+	C.ShowPhase(st,MAXTIME,37,76)
 	//C.ShowPosition(st,MAXTIME,37,76)
 }
 
@@ -200,6 +202,7 @@ func UpdateAgent_Flow(agent int) {
 	}
 }
 
+
 // ****************************************************************
 
 func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
@@ -209,23 +212,51 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
            hard to do this with small integer arithmetic .. which suggests that the smoothness
            of quantum phenomena suggest that there is plenty of room at the bottom for large numbers. */
 
-	const velocity = 9  // odd number 3,5,7
-	var d2 int = 0
-	var newagent C.STAgent = agent
+	agent.Theta += dTheta(agent) % PERIOD
+	agent.Psi += dPsi(agent)
 
-	for di := 0; di < C.N; di++ {		
+	return agent
+}
 
-		d2 += (agent.V[di] - agent.Psi)
+// ******************************************************************
+
+func dTheta(agent C.STAgent) int { // Laplacian
+
+	var   d2 int = 0
+	const dt = 1
+	const velocity = 9
+
+	// Velocity = laplaciant gradient
+
+	for di := 0; di < C.N; di++ {
+
+		d2 += agent.V[di] - agent.Psi
 	}
 
-	const wrange = 100
-	wavelength := C.WAVELENGTH * wrange
+	// This is negative when Psi is higher than neighbours
 
-	theta := agent.Theta + d2 / (C.N * velocity)
-	newagent.Psi = agent.Psi + theta / 10
-	newagent.Theta = theta % wavelength
+	dtheta := dt * d2 / (C.N * velocity)
 
-	return newagent
+	// The sign matters here, so this is not the right place to make single valued
+	// for i := 0; dtheta < 0; i++ {
+	//	dtheta += PERIOD
+	// }
+
+	return dtheta
+}
+
+// ******************************************************************
+
+func dPsi(agent C.STAgent) int { // Laplacian
+
+	var deltaPsi int = 0
+	const dt = 1
+	const velocity = 10
+
+	deltaPsi = agent.Theta * dt
+	dpsi := deltaPsi / velocity
+
+	return dpsi
 }
 
 // ****************************************************************

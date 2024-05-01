@@ -24,6 +24,8 @@ import (
 
 const DoF = 1000
 const MAXTIME = 100000
+const wrange = 100
+const PERIOD = C.WAVELENGTH * wrange
 
 // ****************************************************************
 
@@ -121,7 +123,8 @@ func main () {
 
 	C.ShowState(st,1,37,76)
 	EquilGuideRail()
-	C.ShowState(st,MAXTIME,37,76)
+	C.ShowState(st,MAXTIME,37,76)	
+	//C.ShowPhase(st,MAXTIME,37,76)
 }
 
 // ****************************************************************
@@ -196,6 +199,62 @@ func UpdateAgent_Flow(agent int) {
 // ****************************************************************
 
 func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
+
+	/* The challenge is to stop Psi from growing in amplitude so that differences 
+           no longer matter and the waves eventually stop propagating. It' s very
+           hard to do this with small integer arithmetic .. which suggests that the smoothness
+           of quantum phenomena suggest that there is plenty of room at the bottom for large numbers. */
+
+	agent.Theta += dTheta(agent) % PERIOD
+	agent.Psi += dPsi(agent)
+
+	return agent
+}
+
+// ******************************************************************
+
+func dTheta(agent C.STAgent) int { // Laplacian
+
+	var   d2 int = 0
+	const dt = 1
+	const velocity = 9
+
+	// Velocity = laplaciant gradient
+
+	for di := 0; di < C.N; di++ {
+
+		d2 += agent.V[di] - agent.Psi
+	}
+
+	// This is negative when Psi is higher than neighbours
+
+	dtheta := dt * d2 / (C.N * velocity)
+
+	// The sign matters here, so this is not the right place to make single valued
+	// for i := 0; dtheta < 0; i++ {
+	//	dtheta += PERIOD
+	// }
+
+	return dtheta
+}
+
+// ******************************************************************
+
+func dPsi(agent C.STAgent) int { // Laplacian
+
+	var deltaPsi int = 0
+	const dt = 1
+	const velocity = 10
+
+	deltaPsi = agent.Theta * dt
+	dpsi := deltaPsi / velocity
+
+	return dpsi
+}
+
+// ****************************************************************
+
+func EvolvePsi2(agent C.STAgent) C.STAgent { // Laplacian
 
 	/* The challenge is to stop Psi from growing in amplitude so that differences 
            no longer matter and the waves eventually stop propagating. It' s very

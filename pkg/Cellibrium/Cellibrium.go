@@ -252,18 +252,18 @@ func ShowPhase(st_rows [Ylim]string,tmax,xlim,ylim int) {
   
 					if observable != 0 {
 
-						if WAVE[observable] > 0 {
+						/*if WAVE[observable] > 0 {
 							fmt.Printf("%3s","P")
 						} else {
 							fmt.Printf("%3s","n")
-						}
-						//fmt.Printf("%3d",observable)
+						}*/
+						fmt.Printf("%6d",observable)
 					} else {
-						fmt.Printf("%3s",".")
+						fmt.Printf("%6s",".")
 					}
 					
 				} else {
-					fmt.Printf("%3s"," ")
+					fmt.Printf("%6s"," ")
 				}
 			}
 			

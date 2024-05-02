@@ -36,6 +36,12 @@ type STAgent struct {
 	V       [N]int
 	P       [N]int
 	Wave    [N][WAVELENGTH]int
+
+	// Conservation equipment
+	Offer  [N]int
+	Accept [N]int
+	Xfer int
+	Cancel int
 }
 
 // **********************************************************

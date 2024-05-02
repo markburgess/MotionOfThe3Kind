@@ -167,18 +167,13 @@ func InitAgentGeomAndAdj(x,y int,amplitude int) {
 
 func MovingPromise() {
 
-	CausalIndependence(true) // some noise
-	CausalIndependence(true) // some noise
-	CausalIndependence(true) // some noise
-
 	for t := 0; t < MAXTIME; t++ {
 
 		CausalIndependence(true) // some noise
-		CausalIndependence(true) // some noise
-		CausalIndependence(true) // some noise
+
 		Transition()
 
-		if t % 200 == 0 {
+		if t % 1000 == 0 {
 			POSITION = FIRSTPOSITION
 		}
 
@@ -205,8 +200,11 @@ func Transition() {
 
 		if av != 0 {
 			grad := 2*(location.V[di] - location.Psi)/av
-			if grad < selection {
-				selection = grad
+
+			current := location.Psi * grad
+
+			if current > selection {
+				selection = current
 				direction = di
 			}
 		}

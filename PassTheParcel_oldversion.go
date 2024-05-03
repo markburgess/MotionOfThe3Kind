@@ -321,20 +321,31 @@ func UpdateAgent_Flow(agent int) {
 				
 			case TICK: // me
 
-				neighbourPsi := recv.Value
-				
-				// In this phase we can choose to make an offer to offload
-				// a neighbour's Psi, we have to have received an update first
-				// We issue a promise to take some psi, if the gradient is +ve
-				
-				const mingradient = PsiQuant+1 // if zero we can get trivial oscillations
-				
-				if GradientCapacity(neighbourPsi,AGENT[agent].Psi)  >= mingradient {
-					send.Phase = TAKE
-					send.Value = PsiQuant
-					AGENT[agent].Offer[direction] = send.Value
-					ConditionalChannelOffer(agent,neighbour,send)
-					continue
+				if recv.Value == CREDIT {
+
+					AGENT[agent].Psi += AGENT[agent].Accept[direction]  // CREDIT MY STATE    ** COMMIT++ **
+					AGENT[agent].Accept[direction] = 0
+					AGENT[agent].Offer[direction] = 0
+					// return to update cycle
+
+				} else { 
+					neighbourPsi := recv.Value
+
+					// In this phase we can choose to make an offer to offload
+					// a neighbour's Psi, we have to have received an update first
+					// We issue a promise to take some psi, if the gradient is +ve
+
+					const mingradient = 1 // if zero we can get trivial oscillations
+
+					if GradientCapacity(neighbourPsi,AGENT[agent].Psi)  >= mingradient {
+						send.Phase = TAKE
+						send.Value = PsiQuant
+						AGENT[agent].Offer[direction] = send.Value
+						ConditionalChannelOffer(agent,neighbour,send)
+						continue
+					}
+
+					// return to update cycle
 				}
 
 				send.Value = AGENT[agent].Psi
@@ -366,7 +377,6 @@ func UpdateAgent_Flow(agent int) {
 				transfer_offer := recv.Value
 
 				if AGENT[agent].Offer[direction] == transfer_offer {
-					AGENT[agent].Psi += transfer_offer
 					AGENT[agent].Accept[direction] = transfer_offer // accept priv PAYMENT   ** STAGE WRITE **
 					send.Value = transfer_offer
 				} else {
@@ -386,6 +396,9 @@ func UpdateAgent_Flow(agent int) {
 					// We're trusting the other side won't credit
 					AGENT[agent].Psi += AGENT[agent].Accept[direction]  // restore the reserve amount   ** UNDO **
 					send.Value = AGENT[agent].Psi                       // go back to update cycle
+				} else {
+					// We're trusting the other side will credit the amount
+					send.Value = CREDIT                                 // else paid in full           ** COMMIT-- **
 				}
 
 				AGENT[agent].Accept[direction] = 0  // clear reservation, consider sent
@@ -515,26 +528,26 @@ func ShowState(st_rows [Ylim]string,tmax int) {
 					}
 
 					if (x == IsScreen) {
-						fmt.Printf("%18d",screen[y])
+						fmt.Printf("%20d",screen[y])
 						continue
 					}
   
 					if observable != 0 {
 
 						switch MODE {
-						case psi: 	fmt.Printf("%8d",observable)
-						case momentum: 	fmt.Printf("%8d",xfer)
+						case psi: 	fmt.Printf("%11d",observable)
+						case momentum: 	fmt.Printf("%11d",xfer)
 						}
 
 			
 						total += full
 						visible += observable
 					} else {
-						fmt.Printf("%8s",".")
+						fmt.Printf("%11s",".")
 					}
 					
 				} else {
-					fmt.Printf("%8s"," ")
+					fmt.Printf("%11s"," ")
 				}
 			}
 			

@@ -52,8 +52,8 @@ const TOCK int = 2
 const TAKE int = 3
 const TACK int = 4
 
-const CREDIT int = -1
-const NOTACCEPT int = -1
+const CREDIT int = 1234567
+const NOTACCEPT int = -1234567
 
 // **********************************************************
 
@@ -240,6 +240,7 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 	for t := 1; t < tmax; t++ {
 		
 		fmt.Printf("\x1b[2J") // CLS
+		count := 0
 		
 		for y := 0; y < ylim; y++ {
 			
@@ -250,6 +251,8 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 					var IsScreen = xlim - 1
 
 					observable := AGENT[COORDS[x][y]].Psi
+
+					count += observable
 
 					if x == IsScreen-1 {
 
@@ -284,10 +287,10 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 			fmt.Println("")
 		}
 
+		fmt.Println("TOTAL =",count)
 		SaveScreenPattern("state",screen)
 
 		const noflicker = 10
-
 		time.Sleep(noflicker * time.Duration(base_timescale) * time.Millisecond) // random noise
 	}
 }

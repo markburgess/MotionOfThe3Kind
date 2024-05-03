@@ -222,7 +222,7 @@ func dTheta(agent C.STAgent) int { // Laplacian
 
 	var   d2 int = 0
 	const dt = 1
-	const velocity = 9
+	const mass = 9
 
 	// Velocity = laplaciant gradient
 
@@ -233,12 +233,7 @@ func dTheta(agent C.STAgent) int { // Laplacian
 
 	// This is negative when Psi is higher than neighbours
 
-	dtheta := dt * d2 / (C.N * velocity)
-
-	// The sign matters here, so this is not the right place to make single valued
-	// for i := 0; dtheta < 0; i++ {
-	//	dtheta += PERIOD
-	// }
+	dtheta := dt * d2 / (C.N * mass)
 
 	return dtheta
 }
@@ -249,10 +244,10 @@ func dPsi(agent C.STAgent) int { // Laplacian
 
 	var deltaPsi int = 0
 	const dt = 1
-	const velocity = 10
+	const coupling = 10
 
 	deltaPsi = agent.Theta * dt
-	dpsi := deltaPsi / velocity
+	dpsi := deltaPsi / coupling
 
 	return dpsi
 }

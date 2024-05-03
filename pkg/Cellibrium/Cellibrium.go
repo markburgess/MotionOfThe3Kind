@@ -308,6 +308,11 @@ func ShowPhase(st_rows [Ylim]string,tmax,xlim,ylim int) {
 		for y := 0; y < ylim; y++ {
 			
 			for x := 0; x < xlim; x++ {
+
+				// Pumping test
+				// if st_rows[x][y] == '>' {
+				//	AGENT[COORDS[x][y]].Psi = 44000
+				// }
 				
 				if !Blocked(st_rows,x,y) {
 

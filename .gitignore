@@ -30,7 +30,8 @@ stamp-h1
 /ylwrap
 /test-driver
 /tests/unit/*.log
-/tests/load/*.log
+/*_DS
+
 
 /configure_flags.env
 

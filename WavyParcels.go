@@ -4,9 +4,10 @@
 // This is the pass the parcel protocol with conservation
 // the only wave to ensure true conservation under virtual diffusion.
 //
-// Here we get waves, but the sum over amplitudes of the waves 
-// is conserved. It brings a remarkable stability to the waves!
-// But this is not like energy conservation, more like fiscal balance.
+// When we pass PSI with conserved number, we don't get waves in the
+// usual way, but something between diffusion and wave interference
+// because each direction is treated like a private transaction
+// whereas the state is shared between directions otherwise
 //
 ///////////////////////////////////////////////////////////////
 

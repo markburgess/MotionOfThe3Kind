@@ -122,10 +122,10 @@ func main () {
 
 	C.ShowState(st,1,37,76,"+")
 	EquilGuideRail()
-	//C.ShowState(st,C.MAXTIME,37,76,"num")
+	C.ShowState(st,C.MAXTIME,37,76,"+")
 	//C.ShowPhase(st,C.MAXTIME,37,76)
-	go C.MovingPromise()
-	C.ShowPosition(st,C.MAXTIME,37,76)
+	//go C.MovingPromise()
+	//C.ShowPosition(st,C.MAXTIME,37,76)
 }
 
 // ****************************************************************

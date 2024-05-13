@@ -11,7 +11,7 @@ import (
 
 // **********************************************************
 
-const Xlim = 37
+const Xlim = 41
 const Ylim = 76
 const Adim = Xlim * Ylim
 const base_timescale = 15  // smaller is faster

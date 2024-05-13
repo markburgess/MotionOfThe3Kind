@@ -194,7 +194,7 @@ func UpdateAgent_Flow(agent int) {
 			}
 		}
 		
-		// Now we have updated neighbour Psi[N]
+		// Now we have updated neighbour Psi[N] - compute symmetrically del2
 
 		C.AGENT[agent] = EvolvePsi(C.AGENT[agent])
 	}

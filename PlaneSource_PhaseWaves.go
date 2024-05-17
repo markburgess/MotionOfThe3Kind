@@ -24,7 +24,7 @@ import (
 // **********************************************************
 
 const DoF = 10000
-const wrange = 100
+const wrange = 10000
 const PERIOD = C.WAVELENGTH * wrange
 
 // ****************************************************************
@@ -181,6 +181,11 @@ func UpdateAgent_Flow(agent int) {
 			recv = C.AcceptFromChannel(neighbour,agent)
 
 			// ****************** PROCESS *********************
+			// We put directional updates per direction instead of
+			// for all at once (grad rather than Laplacian) to get
+			// more accurate updates..
+
+			C.AGENT[agent] = EvolvePsi(C.AGENT[agent],direction)
 
 			switch recv.Phase {
 				
@@ -193,24 +198,22 @@ func UpdateAgent_Flow(agent int) {
 				C.ConditionalChannelOffer(agent,neighbour,send)
 			}
 		}
-		
-		// Now we have updated neighbour Psi[N] - compute symmetrically del2
 
-		C.AGENT[agent] = EvolvePsi(C.AGENT[agent])
+		// If we put a full Laplacian here, we get poor results
 	}
 }
 
 
 // ****************************************************************
 
-func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
+func EvolvePsi(agent C.STAgent,direction int) C.STAgent { // Laplacian
 
 	/* The challenge is to stop Psi from growing in amplitude so that differences 
            no longer matter and the waves eventually stop propagating. It' s very
            hard to do this with small integer arithmetic .. which suggests that the smoothness
            of quantum phenomena suggest that there is plenty of room at the bottom for large numbers. */
 
-	agent.Theta += float64(int(dTheta(agent)+0.5) % PERIOD)
+	agent.Theta += dTheta(agent,direction)  // float64(int(dTheta(agent)+0.5) % PERIOD)
 	agent.Psi += dPsi(agent)
 
 	return agent
@@ -218,22 +221,19 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
 
 // ******************************************************************
 
-func dTheta(agent C.STAgent) float64 { // Laplacian
+func dTheta(agent C.STAgent,di int) float64 { // Laplacian
 
 	var   d2 float64 = 0
-	const dt = 1.0
-	const mass = 9
+	const dt = 0.01
+	const mass = 1
 
 	// Velocity = laplaciant gradient
 
-	for di := 0; di < C.N; di++ {
-
-		d2 += agent.V[di] - agent.Psi
-	}
+	d2 += agent.V[di] - agent.Psi
 
 	// This is negative when Psi is higher than neighbours
 
-	dtheta := dt * d2 / (C.N * mass)
+	dtheta := dt * d2 / float64(C.N * mass)
 
 	return dtheta
 }
@@ -243,13 +243,11 @@ func dTheta(agent C.STAgent) float64 { // Laplacian
 func dPsi(agent C.STAgent) float64 { // Laplacian
 
 	var deltaPsi float64 = 0
-	const dt = 1.0
-	const coupling = 10.0
+	const dt = 0.01
 
 	deltaPsi = agent.Theta * dt
-	dpsi := deltaPsi / coupling
 
-	return dpsi
+	return deltaPsi
 }
 
 

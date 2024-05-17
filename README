@@ -59,6 +59,17 @@ There are different models of virtual propagation for waves and particles
 5. ShortSource_PhaseWaves.go - a linear Schrodinger type wave with single/double
                       slits in which the waves are generated before the slits and
                       have to find their way through (already biased direction)
+
+6. WavyParcels.go            - a parcel passing version of the 2d waves
+
+7. OneDimensional_Gradient.go- a one dimensional wave spreading by gradient force.
+
+8. PushMePullYou_Gradient.go - a purely numerical test of gradient force 2 agents, 
+                               to get the fine tuning stability number right
+
+9. PushMePullYou_Payment.go  - a purely numerical test of packet exchange 2 agents
+
+
 -----------------------
 
 To plot the screen graphs, use gnuplot, e.g.

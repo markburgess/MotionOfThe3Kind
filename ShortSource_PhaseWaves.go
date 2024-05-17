@@ -22,8 +22,8 @@ import (
 
 // **********************************************************
 
-const DoF = 1000
-const wrange = 100
+const DoF = 10000
+const wrange = 10000
 const PERIOD = C.WAVELENGTH * wrange
 
 // ****************************************************************
@@ -76,9 +76,9 @@ func main () {
 	st[34] = "*........*..........................|"
 	st[35] = "*........*..........................|"
 	st[36] = "*........*..........................|"
-	st[37] = ">........*..........................|"
-	st[38] = ">........*..........................|"
-	st[39] = ">........*..........................|"
+	st[37] = ">........*..........................|" //>
+	st[38] = ">........*..........................|" //>
+	st[39] = ">........*..........................|" //>
 	st[40] = "*........*..........................|"
 	st[41] = "*........*..........................|"
 	st[42] = "*........*..........................|"
@@ -156,8 +156,6 @@ func UpdateAgent_Flow(agent int) {
 		}
 	}
 
-	const PsiQuant = 1
-
 	C.CausalIndependence(true)
 
 	for t := 0; t < C.MAXTIME; t++ {
@@ -180,6 +178,7 @@ func UpdateAgent_Flow(agent int) {
 			recv = C.AcceptFromChannel(neighbour,agent)
 
 			// ****************** PROCESS *********************
+			C.AGENT[agent] = EvolvePsi(C.AGENT[agent],direction)
 
 			switch recv.Phase {
 				
@@ -191,22 +190,21 @@ func UpdateAgent_Flow(agent int) {
 			}
 		}
 		
-		// Now we have updated neighbour Psi[N]
-
-		C.AGENT[agent] = EvolvePsi(C.AGENT[agent])
+		// Now we have updated neighbour Psi[N], update
+		// C.AGENT[agent] = EvolvePsi(C.AGENT[agent]) - move this by direction above
 	}
 }
 
 // ****************************************************************
 
-func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
+func EvolvePsi(agent C.STAgent, di int) C.STAgent { // Laplacian
 
 	/* The challenge is to stop Psi from growing in amplitude so that differences 
            no longer matter and the waves eventually stop propagating. It' s very
            hard to do this with small integer arithmetic .. which suggests that the smoothness
            of quantum phenomena suggest that there is plenty of room at the bottom for large numbers. */
 
-	agent.Theta += float64(int(dTheta(agent)+0.5) % PERIOD)
+	agent.Theta += dTheta(agent,di)  // float64(int(dTheta(agent,di)+0.5) % PERIOD)
 	agent.Psi += dPsi(agent)
 
 	return agent
@@ -214,22 +212,21 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
 
 // ******************************************************************
 
-func dTheta(agent C.STAgent) float64 { // Laplacian
+func dTheta(agent C.STAgent, di int) float64 { // Laplacian
 
 	var   d2 float64 = 0
-	const dt = 1.0
-	const velocity = 9.0
+	const dt = 0.005
+	const mass = 1.0
 
 	// Velocity = laplaciant gradient
 
-	for di := 0; di < C.N; di++ {
-
-		d2 += agent.V[di] - agent.Psi
-	}
+	//for di := 0; di < C.N; di++ {
+	d2 += agent.V[di] - agent.Psi
+	//}
 
 	// This is negative when Psi is higher than neighbours
 
-	dtheta := dt * d2 / (C.N * velocity)
+	dtheta := dt * d2 / (C.N * mass)
 
 	// The sign matters here, so this is not the right place to make single valued
 	// for i := 0; dtheta < 0; i++ {
@@ -243,14 +240,11 @@ func dTheta(agent C.STAgent) float64 { // Laplacian
 
 func dPsi(agent C.STAgent) float64 { // Laplacian
 
-	var deltaPsi float64 = 0
-	const dt = 1.0
-	const velocity = 10.0
+	const dt = 0.005
 
-	deltaPsi = agent.Theta * dt
-	dpsi := deltaPsi / velocity
+	deltaPsi := agent.Theta * dt
 
-	return dpsi
+	return deltaPsi
 }
 
 // ****************************************************************

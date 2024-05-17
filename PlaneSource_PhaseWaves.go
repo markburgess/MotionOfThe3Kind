@@ -157,8 +157,6 @@ func UpdateAgent_Flow(agent int) {
 		}
 	}
 
-	const PsiQuant = 1
-
 	C.CausalIndependence(true)
 
 	for t := 0; t < C.MAXTIME; t++ {
@@ -175,8 +173,6 @@ func UpdateAgent_Flow(agent int) {
 			if neighbour == 0 {
 				continue // wall signal
 			}
-
-			// We need to wait for a positive signal indicating a new transfer to avoid double/empty reading
 
 			recv = C.AcceptFromChannel(neighbour,agent)
 
@@ -225,7 +221,7 @@ func dTheta(agent C.STAgent,di int) float64 { // Laplacian
 
 	var   d2 float64 = 0
 	const dt = 0.01
-	const mass = 1
+	const mass = 2.0
 
 	// Velocity = laplaciant gradient
 
@@ -242,10 +238,9 @@ func dTheta(agent C.STAgent,di int) float64 { // Laplacian
 
 func dPsi(agent C.STAgent) float64 { // Laplacian
 
-	var deltaPsi float64 = 0
 	const dt = 0.01
 
-	deltaPsi = agent.Theta * dt
+	deltaPsi := agent.Theta * dt
 
 	return deltaPsi
 }

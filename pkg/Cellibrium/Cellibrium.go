@@ -234,7 +234,7 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 	switch mode {
 	case "+": fieldwidth = fmt.Sprintf("%c%ds",'%',3)
 	default:  fieldwidth = fmt.Sprintf("%c%ds",'%',6)
-		numwidth = fmt.Sprintf("%c%df",'%',6)
+		numwidth = fmt.Sprintf("%c%d.1f",'%',6)
 	}
 
 	for t := 1; t < tmax; t++ {
@@ -267,11 +267,14 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 					if observable != 0 {
 
 						if mode == "+" {
-							if observable > 0 {
+							if observable > 0.1 {
 								fmt.Printf(fieldwidth,"+")
-							} else {
+							} else if observable < -0.1 {
 								fmt.Printf(fieldwidth,"-")
+							} else {
+								fmt.Printf(fieldwidth,".")
 							}
+
 						} else {
 							fmt.Printf(numwidth,observable)
 						}

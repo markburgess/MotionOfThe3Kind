@@ -210,7 +210,7 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
            hard to do this with small integer arithmetic .. which suggests that the smoothness
            of quantum phenomena suggest that there is plenty of room at the bottom for large numbers. */
 
-	agent.Theta += dTheta(agent) % PERIOD
+	agent.Theta += float64(int(dTheta(agent)+0.5) % PERIOD)
 	agent.Psi += dPsi(agent)
 
 	return agent
@@ -218,10 +218,10 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
 
 // ******************************************************************
 
-func dTheta(agent C.STAgent) int { // Laplacian
+func dTheta(agent C.STAgent) float64 { // Laplacian
 
-	var   d2 int = 0
-	const dt = 1
+	var   d2 float64 = 0
+	const dt = 1.0
 	const mass = 9
 
 	// Velocity = laplaciant gradient
@@ -240,11 +240,11 @@ func dTheta(agent C.STAgent) int { // Laplacian
 
 // ******************************************************************
 
-func dPsi(agent C.STAgent) int { // Laplacian
+func dPsi(agent C.STAgent) float64 { // Laplacian
 
-	var deltaPsi int = 0
-	const dt = 1
-	const coupling = 10
+	var deltaPsi float64 = 0
+	const dt = 1.0
+	const coupling = 10.0
 
 	deltaPsi = agent.Theta * dt
 	dpsi := deltaPsi / coupling

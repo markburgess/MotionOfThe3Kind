@@ -116,9 +116,9 @@ func main () {
 
 	C.Initialize(st,DoF)
 
-	C.ShowState(st,1,23,65)
+	C.ShowState(st,1,23,65,"+")
 	EquilGuideRail()
-	C.ShowState(st,MAXTIME,23,65)
+	C.ShowState(st,MAXTIME,23,65,"+")
 }
 
 // ****************************************************************
@@ -203,11 +203,11 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
 
 // ****************************************************************
 
-func dPsiDot(agent C.STAgent) int { // Laplacian
+func dPsiDot(agent C.STAgent) float64 { // Laplacian
 
-	var deltaPsiDot int = 0
-	const dt = 1
-	const velocity = 9
+	var deltaPsiDot float64 = 0
+	const dt = 1.0
+	const velocity = 9.0
 
 	// Velocity = laplaciant gradient
 
@@ -224,11 +224,11 @@ func dPsiDot(agent C.STAgent) int { // Laplacian
 
 // ****************************************************************
 
-func dPsi(agent C.STAgent) int { // Laplacian
+func dPsi(agent C.STAgent) float64 { // Laplacian
 
-	var deltaPsi int = 0
-	const dt = 1
-	const velocity = 10
+	var deltaPsi float64 = 0
+	const dt = 1.0
+	const velocity = 10.0
 
 	deltaPsi = agent.PsiDot * dt
 	dpsi := deltaPsi / velocity

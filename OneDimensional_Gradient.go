@@ -32,9 +32,9 @@ func main () {
 	C.MODEL_NAME = "OneDimension"
 
 	var st [C.Ylim]string
-	st[0] = "*****************************************"
-	st[1] = ">.......................................|"  // X
-	st[2] = "*****************************************"
+	st[0] = "********************************************************"
+	st[1] = "..........................>>>..........................|"  // X
+	st[2] = "********************************************************"
 
 	// Keep the data structures for agents global too for convenience
 
@@ -56,10 +56,10 @@ func EquilGuideRail() {
 // ****************************************************************
 
 func UpdateAgent_Flow(agent int) {
-	
-	// Start with an  unconditional promise to break the deadlock symmetry
 
-	for direction := 0; direction < C.N; direction++ {
+	const ew_only = 2
+
+	for direction := ew_only; direction < C.N; direction++ {
 
 		neighbour := C.AGENT[agent].Neigh[direction]
 		
@@ -71,10 +71,15 @@ func UpdateAgent_Flow(agent int) {
 		}
 	}
 
+	const PsiQuant = 1
+
 	C.CausalIndependence(true)
 
 	for t := 0; t < C.MAXTIME; t++ {
 		
+		// Every pair of agents has a private directional channel that's not overwritten by anyone else
+		// Messages persist until they are read and cannot unseen
+
 		for direction := 0; direction < C.N; direction++ {
 			
 			var send,recv C.Message
@@ -85,93 +90,44 @@ func UpdateAgent_Flow(agent int) {
 				continue // wall signal
 			}
 
+			// We need to wait for a positive signal indicating a new transfer to avoid double/empty reading
+
 			recv = C.AcceptFromChannel(neighbour,agent)
 
 			// ****************** PROCESS *********************
 
 			switch recv.Phase {
 				
-			case C.TICK: // me - this is foreach direction...
-
+			case C.TICK:
 				C.AGENT[agent].V[direction] = recv.Value
-				send.Phase = C.TAKE
-				// Because there is private communication with each agent, this is now inside the loop
-				send.Value = EvolveAndOfferDeltaPsi(agent,direction)
-				C.AGENT[agent].Offer[direction] = send.Value
-				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
-
-			case C.TAKE: // YOU
-				transfer_offer := recv.Value
-				send.Value = transfer_offer
-				C.AGENT[agent].Accept[direction] = transfer_offer // reserve amount
-				C.AGENT[agent].Psi -= transfer_offer
-				send.Phase = C.TACK
-				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
-
-			case C.TACK: // me
-				transfer_offer := recv.Value
-
-				if C.AGENT[agent].Offer[direction] == transfer_offer {
-					C.AGENT[agent].Psi += transfer_offer
-					send.Value = transfer_offer
-				} else {
-					send.Value = C.NOTACCEPT
-				}
-				C.AGENT[agent].Accept[direction] = 0
-				C.AGENT[agent].Offer[direction] = 0
-				send.Phase = C.TOCK
-				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
-				
-			case C.TOCK: // YOU - initiate a change / Xfer
-
-				if recv.Value == C.NOTACCEPT {
-					// Move the reserved amount back
-					C.AGENT[agent].Psi += C.AGENT[agent].Accept[direction]
-				}
-
-				C.AGENT[agent].Accept[direction] = 0  // clear reservation, consider sent
-				C.AGENT[agent].Offer[direction] = 0
+				C.AGENT[agent].Psi += EvolvePsi(agent,direction)
 				send.Value = C.AGENT[agent].Psi
 				send.Phase = C.TICK
 				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
 			}
 		}
 	}
 }
 
+
 // ****************************************************************
 // Now we must be able to handle negative amounts too: debt, else just a diffusion problem
 // ****************************************************************
 
-func EvolveAndOfferDeltaPsi(agent,direction int) int {
+func EvolvePsi(agent,direction int) float64 {
 
-	const mass = 111
-	const coupling = 11
+	const mass = 15.0
+	const dt = 0.01
 
-	const dt = 1
+	grad := C.AGENT[agent].V[direction] - C.AGENT[agent].Psi
 
-	// Because this is private for each neighbour, the
-	// Laplacian is just the gradient for each individual direction
+	deltaTheta := grad / mass *  dt // small increments
 
-	d2 := C.AGENT[agent].V[direction] - C.AGENT[agent].Psi
+	DeltaPsi := C.AGENT[agent].Theta * dt
 
-	// This is negative when Psi is higher than neighbours
-	// Increase inv_velocity theta to increase wavelength
+	C.AGENT[agent].Theta += deltaTheta
 
-	dtheta := d2 / mass
-
-	// Stability, reduce velocity more quicky (leads to quicker smaller oscillations)
-
-	C.AGENT[agent].Theta += dtheta * dt % PERIOD  // update velocity
-
-	deltaPsi := C.AGENT[agent].Theta * dt // displacement = velocity x time
-
-	// C.AGENT[agent].Psi += deltaPsi deferred to xfer
-	return deltaPsi / coupling
+	return DeltaPsi
 
 }
 

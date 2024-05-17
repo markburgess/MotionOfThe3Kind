@@ -11,7 +11,7 @@ import (
 
 // **********************************************************
 
-const Xlim = 41
+const Xlim = 56
 const Ylim = 76
 const Adim = Xlim * Ylim
 const base_timescale = 15  // smaller is faster
@@ -20,7 +20,7 @@ const MAXTIME = 100000
 var   DOUBLE_SLIT bool = false
 const WAVECHAR = "uuuu0000dddd0000"
 const WAVELENGTH = len(WAVECHAR)
-var   WAVE [WAVELENGTH]int
+var   WAVE [WAVELENGTH]float64
 const N = 4
 
 var MODEL_NAME string
@@ -29,17 +29,17 @@ var MODEL_NAME string
 
 type STAgent struct {
 
-	Psi     int
-	PsiDot  int
-	Theta   int
+	Psi     float64
+	PsiDot  float64
+	Theta   float64
 	Neigh   [N]int
-	V       [N]int
-	P       [N]int
-	Wave    [N][WAVELENGTH]int
+	V       [N]float64
+	P       [N]float64
+	Wave    [N][WAVELENGTH]float64
 
 	// Conservation equipment
-	Offer  [N]int
-	Accept [N]int
+	Offer  [N]float64
+	Accept [N]float64
 	Xfer int
 	Cancel int
 }
@@ -53,15 +53,15 @@ const TAKE int = 3
 const TACK int = 4
 
 const CREDIT int = 1234567
-const NOTACCEPT int = -1234567
+const NOTACCEPT = -1234567.0
 
 // **********************************************************
 
 type Message struct {
 
-	Value   int
-	Angle   int
-	Phase   int
+	Value   float64
+	Angle   float64
+	Phase   int      // proto phase
 }
 
 // **********************************************************
@@ -78,7 +78,7 @@ var R = rand.New(S)
 
 // ****************************************************************
 
-func Initialize(st_rows [Ylim]string, DoF int) {
+func Initialize(st_rows [Ylim]string, DoF float64) {
 
 	// Agent index begins at 1 .. < dimgraph
 
@@ -131,7 +131,7 @@ func Initialize(st_rows [Ylim]string, DoF int) {
 
 //***********************************************************
 
-func InitAgentGeomAndAdj(x,y int,amplitude int) {
+func InitAgentGeomAndAdj(x,y int,amplitude float64) {
 
 	agent := COORDS[x][y]
 	AGENT[agent].Psi = amplitude
@@ -193,7 +193,7 @@ func Transition() {
 	location := AGENT[POSITION] // the single privileged location promise
 
 	//var peak int
-	var selection int = -1
+	var selection float64 = -1
 	var direction int = -1
 
 	for di := 0; di < N; di++ {		
@@ -234,13 +234,13 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 	switch mode {
 	case "+": fieldwidth = fmt.Sprintf("%c%ds",'%',3)
 	default:  fieldwidth = fmt.Sprintf("%c%ds",'%',6)
-		numwidth = fmt.Sprintf("%c%dd",'%',6)
+		numwidth = fmt.Sprintf("%c%df",'%',6)
 	}
 
 	for t := 1; t < tmax; t++ {
 		
 		fmt.Printf("\x1b[2J") // CLS
-		count := 0
+		count := 0.0
 		
 		for y := 0; y < ylim; y++ {
 			
@@ -389,9 +389,9 @@ func ShowPosition(st_rows [Ylim]string,tmax,xlim,ylim int) {
 
 // *************************************************************
 
-func MakeWaves(process string) [WAVELENGTH]int {
+func MakeWaves(process string) [WAVELENGTH]float64 {
 
-	var wave [WAVELENGTH]int
+	var wave [WAVELENGTH]float64
 
 	for pos := 0; pos < WAVELENGTH; pos++ {
 
@@ -510,7 +510,7 @@ func CausalIndependence(mode bool) {
 
 // ****************************************************************
 
-func WillingToTake(offer,agent int) bool {
+func WillingToTake(offer float64,agent int) bool {
 
 	return (AGENT[agent].Psi >= 0 + offer)
 }

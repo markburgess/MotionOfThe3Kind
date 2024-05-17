@@ -206,7 +206,7 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
            hard to do this with small integer arithmetic .. which suggests that the smoothness
            of quantum phenomena suggest that there is plenty of room at the bottom for large numbers. */
 
-	agent.Theta += dTheta(agent) % PERIOD
+	agent.Theta += float64(int(dTheta(agent)+0.5) % PERIOD)
 	agent.Psi += dPsi(agent)
 
 	return agent
@@ -214,11 +214,11 @@ func EvolvePsi(agent C.STAgent) C.STAgent { // Laplacian
 
 // ******************************************************************
 
-func dTheta(agent C.STAgent) int { // Laplacian
+func dTheta(agent C.STAgent) float64 { // Laplacian
 
-	var   d2 int = 0
-	const dt = 1
-	const velocity = 9
+	var   d2 float64 = 0
+	const dt = 1.0
+	const velocity = 9.0
 
 	// Velocity = laplaciant gradient
 
@@ -241,11 +241,11 @@ func dTheta(agent C.STAgent) int { // Laplacian
 
 // ******************************************************************
 
-func dPsi(agent C.STAgent) int { // Laplacian
+func dPsi(agent C.STAgent) float64 { // Laplacian
 
-	var deltaPsi int = 0
-	const dt = 1
-	const velocity = 10
+	var deltaPsi float64 = 0
+	const dt = 1.0
+	const velocity = 10.0
 
 	deltaPsi = agent.Theta * dt
 	dpsi := deltaPsi / velocity
@@ -264,9 +264,9 @@ of quantum phenomena suggest that there is plenty of room at the bottom for larg
 The spin case converges over about 100 iterations with a simple two state model, so for
 waves with interference */
 
-	const affinity = 10
-	const v2 = 3  // odd number 3,5,7
-	var d2 int = 0
+	const affinity = 10.0
+	const v2 = 3.0  // odd number 3,5,7
+	var d2 float64 = 0
 	var newagent C.STAgent = agent
 
 	for di := 0; di < C.N; di++ {		
@@ -276,10 +276,10 @@ waves with interference */
 
 	// To shorten the wavelength increase v2 - even/odd numbers play a role due to the discrete scale
 
-	newtheta := (agent.Theta + C.WAVELENGTH/4) % C.WAVELENGTH; // (agent.Theta + d2/v2) % WAVELENGTH;
+	newtheta := (int(agent.Theta) + C.WAVELENGTH/4) % C.WAVELENGTH
 	dpsi := -C.WAVE[newtheta] * d2/v2
 	newagent.Psi = agent.Psi + dpsi
-	newagent.Theta = newtheta 
+	newagent.Theta = float64(newtheta )
 
 	return newagent
 }

@@ -15,7 +15,7 @@ import (
 
 // **********************************************************
 
-const DoF = 11000
+const DoF = 11000.0
 const MAXTIME = 100000
 
 // ****************************************************************
@@ -97,9 +97,9 @@ func main () {
 
 	C.Initialize(st,DoF)
 
-	C.ShowState(st,1,37,66)
+	C.ShowState(st,1,37,66,"+")
 	EquilGuideRail()
-	C.ShowState(st,MAXTIME,37,66)
+	C.ShowState(st,MAXTIME,37,66,"+")
 }
 
 // ****************************************************************
@@ -167,7 +167,7 @@ func UpdateAgent_Flow(agent int) {
 		
 		// Now we have updated messages from our neighbours for their Psi[N]
 
-		C.AGENT[agent] = EvolvePsiTypeII(C.AGENT[agent])
+		C.AGENT[agent] = EvolvePsiTypeI(C.AGENT[agent])
 	}
 }
 
@@ -184,7 +184,7 @@ waves with interference */
 
 	const affinity = 10
 	const v2 = 3  // odd number 3,5,7
-	var d2 int = 0
+	var d2 float64 = 0
 	var newagent C.STAgent = agent
 
 	for di := 0; di < C.N; di++ {		
@@ -194,10 +194,10 @@ waves with interference */
 
 	// To shorten the wavelength increase v2 - even/odd numbers play a role due to the discrete scale
 
-	newtheta := (agent.Theta + C.WAVELENGTH/4) % C.WAVELENGTH; // (agent.Theta + d2/v2) % WAVELENGTH;
+	newtheta := (int(agent.Theta+0.5) + C.WAVELENGTH/4) % C.WAVELENGTH
 	dpsi := -C.WAVE[newtheta] * d2/v2
 	newagent.Psi = agent.Psi + dpsi
-	newagent.Theta = newtheta 
+	newagent.Theta = float64(newtheta)
 
 	return newagent
 }
@@ -208,7 +208,7 @@ func EvolvePsiTypeII(agent C.STAgent) C.STAgent { // Laplacian
 
 	const affinity = 10
 	const v2 = 5  // odd number
-	var d2 int = 0
+	var d2 float64 = 0
 	var newagent C.STAgent = agent
 
 	for di := 0; di < C.N; di++ {		
@@ -218,16 +218,16 @@ func EvolvePsiTypeII(agent C.STAgent) C.STAgent { // Laplacian
 
 	// To shorten the wavelength increase v2 - even/odd numbers play a role due to the discrete scale
 
-	newtheta := (agent.Theta + d2/v2) % C.WAVELENGTH;
+	newtheta := (int(agent.Theta+0.5 + d2/v2)) % C.WAVELENGTH;
 
 	for offset := C.WAVELENGTH; newtheta < 0; offset += C.WAVELENGTH {
 
-		newtheta = (agent.Theta + offset + d2) % C.WAVELENGTH;
+		newtheta = (int(agent.Theta+0.5 + d2) + offset) % C.WAVELENGTH;
 	}
 
 	drho := C.WAVE[newtheta] * d2/v2 / C.N
 	newagent.Psi = agent.Psi + drho
-	newagent.Theta = newtheta 
+	newagent.Theta = float64(newtheta) 
 
 	return newagent
 }

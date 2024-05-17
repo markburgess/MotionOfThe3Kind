@@ -31,6 +31,7 @@ stamp-h1
 /test-driver
 /tests/unit/*.log
 /*_DS
+/*_SS
 
 
 /configure_flags.env

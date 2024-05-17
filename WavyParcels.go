@@ -229,12 +229,12 @@ func UpdateAgent_Flow(agent int) {
 // Now we must be able to handle negative amounts too: debt, else just a diffusion problem
 // ****************************************************************
 
-func EvolveAndOfferDeltaPsi(agent,direction int) int {
+func EvolveAndOfferDeltaPsi(agent,direction int) float64 {
 
 	const mass = 111
 	const coupling = 11
 
-	const dt = 1
+	const dt = 1.0
 
 	// Because this is private for each neighbour, the
 	// Laplacian is just the gradient for each individual direction
@@ -248,7 +248,7 @@ func EvolveAndOfferDeltaPsi(agent,direction int) int {
 
 	// Stability, reduce velocity more quicky (leads to quicker smaller oscillations)
 
-	C.AGENT[agent].Theta += dtheta * dt % PERIOD  // update velocity
+	C.AGENT[agent].Theta += float64(int(dtheta * dt+0.5) % PERIOD)
 
 	deltaPsi := C.AGENT[agent].Theta * dt // displacement = velocity x time
 

@@ -233,8 +233,8 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 
 	switch mode {
 	case "+": fieldwidth = fmt.Sprintf("%c%ds",'%',3)
-	default:  fieldwidth = fmt.Sprintf("%c%ds",'%',6)
-		numwidth = fmt.Sprintf("%c%d.1f",'%',6)
+	default:  fieldwidth = fmt.Sprintf("%c%ds",'%',8)
+		numwidth = fmt.Sprintf("%c%d.1f",'%',8)
 	}
 
 	for t := 1; t < tmax; t++ {
@@ -267,17 +267,82 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 					if observable != 0 {
 
 						if mode == "+" {
-							if observable > 0.1 {
+							if observable > 1 {
 								fmt.Printf(fieldwidth,"+")
-							} else if observable < -0.1 {
+							} else if observable < -1 {
 								fmt.Printf(fieldwidth,"-")
 							} else {
 								fmt.Printf(fieldwidth,".")
 							}
 
 						} else {
-							fmt.Printf(numwidth,observable)
+							if observable*observable > 1 {
+								fmt.Printf(numwidth,observable)
+							} else {
+								fmt.Printf(fieldwidth,".")
+							}
 						}
+					} else {
+						fmt.Printf(fieldwidth,".")
+					}
+					
+				} else {
+					fmt.Printf(fieldwidth," ")
+				}
+			}
+			
+			fmt.Println("")
+		}
+
+		fmt.Println("TOTAL =",count)
+		SaveScreenPattern("state",screen)
+
+		const noflicker = 10
+		time.Sleep(noflicker * time.Duration(base_timescale) * time.Millisecond) // random noise
+	}
+}
+
+// ****************************************************************
+
+func ShowAffinity(st_rows [Ylim]string,tmax,xlim,ylim int) {
+	
+	var screen [Ylim]float64
+	var fieldwidth,numwidth string
+
+	fieldwidth = fmt.Sprintf("%c%ds",'%',8)
+	numwidth = fmt.Sprintf("%c%d.1f",'%',8)
+
+	for t := 1; t < tmax; t++ {
+		
+		fmt.Printf("\x1b[2J") // CLS
+		count := 0.0
+		
+		for y := 0; y < ylim; y++ {
+			
+			for x := 0; x < xlim; x++ {
+				
+				if !Blocked(st_rows,x,y) {
+
+					var IsScreen = xlim - 1
+
+					observable := AGENT[COORDS[x][y]].Psi
+
+					count += observable
+
+					if x == IsScreen-1 {
+
+						screen[y] += math.Sqrt(float64(observable) * float64(observable))
+					}
+
+					if (x == IsScreen) {
+						fmt.Printf("%24.1f",screen[y])
+						continue
+					}
+
+					affinity := math.Log(observable*observable)
+  
+					if observable > 1 {
+						fmt.Printf(numwidth,affinity)
 					} else {
 						fmt.Printf(fieldwidth,".")
 					}

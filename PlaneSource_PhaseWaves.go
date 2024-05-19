@@ -123,7 +123,8 @@ func main () {
 
 	C.ShowState(st,1,37,76,"+")
 	EquilGuideRail()
-	C.ShowState(st,C.MAXTIME,37,76,"+")
+	//C.ShowState(st,C.MAXTIME,37,76,"+")
+	C.ShowAffinity(st,C.MAXTIME,37,76)
 	//go C.MovingPromise()
 	//C.ShowPhase(st,C.MAXTIME,37,76)
 }

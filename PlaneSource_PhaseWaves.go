@@ -188,7 +188,6 @@ func UpdateAgent_Flow(agent int) {
 				
 			case C.TICK:
 				C.AGENT[agent].V[direction] = recv.Value
-				C.AGENT[agent].P[direction] = recv.Angle
 				send.Value = C.AGENT[agent].Psi
 				send.Angle = C.AGENT[agent].Theta
 				send.Phase = C.TICK

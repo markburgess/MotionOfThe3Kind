@@ -34,8 +34,6 @@ type STAgent struct {
 	Theta   float64
 	Neigh   [N]int
 	V       [N]float64
-	P       [N]float64
-	Wave    [N][WAVELENGTH]float64
 
 	// Conservation equipment
 	Offer  [N]float64

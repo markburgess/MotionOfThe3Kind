@@ -36,7 +36,6 @@ type STAgent struct {
 	Offer  [N]int // last send
 	Accept [N]int // last recv
 	Xfer int
-	Cancel int
 	t int
 }
 

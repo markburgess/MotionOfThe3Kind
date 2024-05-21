@@ -17,6 +17,7 @@ import (
 
 const DoF = 11000.0
 const MAXTIME = 100000
+const WAVESCALE = 10
 
 // ****************************************************************
 
@@ -99,7 +100,8 @@ func main () {
 
 	C.ShowState(st,1,37,66,"+")
 	EquilGuideRail()
-	C.ShowState(st,MAXTIME,37,66,"+")
+	//C.ShowState(st,MAXTIME,37,66,"+")
+	C.ShowAffinity(st,MAXTIME,37,66)
 }
 
 // ****************************************************************
@@ -183,7 +185,7 @@ The spin case converges over about 100 iterations with a simple two state model,
 waves with interference */
 
 	const affinity = 10
-	const v2 = 3  // odd number 3,5,7
+	const mass = 9  // odd number 3,5,7
 	var d2 float64 = 0
 	var newagent C.STAgent = agent
 
@@ -193,9 +195,10 @@ waves with interference */
 	}
 
 	// To shorten the wavelength increase v2 - even/odd numbers play a role due to the discrete scale
+	wavelength := C.WAVELENGTH * WAVESCALE
 
-	newtheta := (int(agent.Theta+0.5) + C.WAVELENGTH/4) % C.WAVELENGTH
-	dpsi := -C.WAVE[newtheta] * d2/v2
+	newtheta := (int(agent.Theta+0.5) + wavelength/8) % C.WAVELENGTH
+	dpsi := C.WAVE[newtheta] * d2/mass
 	newagent.Psi = agent.Psi + dpsi
 	newagent.Theta = float64(newtheta)
 
@@ -207,7 +210,7 @@ waves with interference */
 func EvolvePsiTypeII(agent C.STAgent) C.STAgent { // Laplacian
 
 	const affinity = 10
-	const v2 = 5  // odd number
+	const mass = 5  // odd number
 	var d2 float64 = 0
 	var newagent C.STAgent = agent
 
@@ -218,14 +221,14 @@ func EvolvePsiTypeII(agent C.STAgent) C.STAgent { // Laplacian
 
 	// To shorten the wavelength increase v2 - even/odd numbers play a role due to the discrete scale
 
-	newtheta := (int(agent.Theta+0.5 + d2/v2)) % C.WAVELENGTH;
+	newtheta := (int(agent.Theta+0.5 + d2/mass)) % C.WAVELENGTH;
 
 	for offset := C.WAVELENGTH; newtheta < 0; offset += C.WAVELENGTH {
 
 		newtheta = (int(agent.Theta+0.5 + d2) + offset) % C.WAVELENGTH;
 	}
 
-	drho := C.WAVE[newtheta] * d2/v2 / C.N
+	drho := C.WAVE[newtheta] * d2/ mass / C.N
 	newagent.Psi = agent.Psi + drho
 	newagent.Theta = float64(newtheta) 
 

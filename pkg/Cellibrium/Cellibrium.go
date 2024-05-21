@@ -29,11 +29,14 @@ var MODEL_NAME string
 
 type STAgent struct {
 
-	Psi     float64
-	PsiDot  float64
-	Theta   float64
+	Psi      float64
+	PsiDot   float64
+	Theta    float64
+	Momentum float64
+
 	Neigh   [N]int
-	V       [N]float64
+	V       [N]float64 
+	Moment  [N]float64
 
 	// Conservation equipment
 	Offer  [N]float64

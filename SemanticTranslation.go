@@ -14,7 +14,8 @@
 package main
 
 import (
-	"os"
+	"fmt"
+	"time"
 	C "Cellibrium"
 )
 
@@ -23,6 +24,9 @@ import (
 const DoF = 20000
 const wrange = 100
 const PERIOD = C.WAVELENGTH * wrange
+
+var Y_TRANSITION_MATRIX = make(map[string]byte)
+var X_TRANSITION_MATRIX = make(map[string]byte)
 
 // ****************************************************************
 
@@ -68,9 +72,9 @@ func main () {
 	st[33] = "*...................................*"
 	st[34] = "*...................................*"
 	st[35] = "*...................................*"
-	st[36] = "*...................................*"
-	st[37] = "*...................................*" // >
-	st[38] = "*...................................*" // >
+	st[36] = "*........................S..........*"
+	st[37] = "*........................+..........*" // >
+	st[38] = "*........................N..........*" // >
 	st[39] = "*...................................*" // >
 	st[40] = "*...................................*"
 	st[41] = "*...................................*"
@@ -84,12 +88,12 @@ func main () {
 	st[49] = "*...................................*"
 	st[50] = "*...................................*"
 	st[51] = "*...................................*"
-	st[52] = "*...................................*"
+	st[52] = "*..W+E..............................*"
 	st[53] = "*...................................*"
 	st[54] = "*...................................*"
-	st[55] = "*.........u.........................*"
-	st[56] = "*........u0d........................*"
-	st[57] = "*.........d.........................*"
+	st[55] = "*...................................*"
+	st[56] = "*........E+W........................*"
+	st[57] = "*...................................*"
 	st[58] = "*...................................*"
 	st[59] = "*...................................*"
 	st[60] = "*...................................*"
@@ -101,51 +105,41 @@ func main () {
 	st[66] = "*...................................*"
 	st[67] = "*...................................*"
 	st[68] = "*...................................*"
-	st[69] = "*...................................*"
-	st[70] = "*...................................*"
-	st[71] = "*...................................*"
+	st[69] = "*......N............................*"
+	st[70] = "*......+............................*"
+	st[71] = "*......S............................*"
 	st[72] = "*...................................*"
 	st[73] = "*...................................*"
 	st[74] = "*...................................*"
 	st[75] = "*************************************"
 
 	C.Initialize(st,DoF)
-	InitializeParticle(st)
-	C.ShowState(st,1,37,76,"num")
+	InitTransitionMatrix()
 	EquilGuideRail()
-	//C.ShowState(st,C.MAXTIME,37,76,"+")
-	C.ShowAffinity(st,C.MAXTIME,37,76)
-	//C.ShowPhase(st,C.MAXTIME,37,76)
-	//go C.MovingPromise()
-	//C.ShowPosition(st,C.MAXTIME,37,76)
+	ShowStates(st,C.MAXTIME,37,76)
 }
 
 // ****************************************************************
 
-func Initialize(st_rows [Ylim]string, DoF float64) {
+func InitTransitionMatrix() {
 
-	// Agent index begins at 1 .. < dimgraph
+	// This represents oriented cycles
 
-	var i int = 1
+	X_TRANSITION_MATRIX["..E"] = 'E'
+	X_TRANSITION_MATRIX["EE+"] = '_'
+	X_TRANSITION_MATRIX["E_+"] = '+'
+	X_TRANSITION_MATRIX["++W"] = 'W'
+	X_TRANSITION_MATRIX["O_W"] = 'W'
+	X_TRANSITION_MATRIX["WW."] = '.'
 
-	// First need a lookup table from x,y -> i
-	// Set up graph matrix and laplacian, and VECTOR PSI
+	// orth
 
-	const d = 1.0 // standard hop distance
-
-	for y := 1; y < len(st_rows)-1; y++ {
-
-		for x := 0; x < len(st_rows[y])-1; x++ {
-
-			switch st_rows[y][x] {
-
-			case 'x': InitAgentGeomAndAdj(x,y,0) 
-
-			case 'X': InitAgentGeomAndAdj(x,y,DoF)
-
-			}
-		}
-	}
+	Y_TRANSITION_MATRIX["..N"] = 'N'
+	Y_TRANSITION_MATRIX["NN+"] = '_'
+	Y_TRANSITION_MATRIX["N_+"] = '+'
+	Y_TRANSITION_MATRIX["++S"] = 'S'
+	Y_TRANSITION_MATRIX["O_S"] = 'S'
+	Y_TRANSITION_MATRIX["SS."] = '.'
 }
 
 // ****************************************************************
@@ -162,121 +156,133 @@ func EquilGuideRail() {
 
 func UpdateAgent_Flow(agent int) {
 	
-	// Start with an  unconditional promise to break the deadlock symmetry
-
-	for direction := 0; direction < C.N; direction++ {
-
-		neighbour := C.AGENT[agent].Neigh[direction]
-		
-		if neighbour != 0 {
-			var breaker C.Message
-			breaker.Value = C.AGENT[agent].Psi
-			breaker.Phase = C.TICK
-			C.CHANNEL[agent][neighbour] = breaker
-		}
-	}
+	// Simplify communication for now
 
 	C.CausalIndependence(true)
 
 	for t := 0; t < C.MAXTIME; t++ {
+
+		// An FSM propagator
+	
+		// if I am downstream, prepare to receive
+		// we must have a lattice to preserve semantic continuity of direction
+		// this is borne out my the existence of dipoles
+
+		var d,dbar int
+
+		d = C.EAST
+		dbar = (d + C.DIMENSION) % (2*C.DIMENSION)
+
+		e,w := InferPolarity(agent,d,dbar)
+
+		C.AGENT[agent].ID = TransformState(d,e,C.AGENT[agent].ID,w)
+
+		C.CausalIndependence(false)
+
+		d = C.NORTH
+		dbar = (d + C.DIMENSION) % (2*C.DIMENSION)
+
+		n,s := InferPolarity(agent,d,dbar)
+
+		C.AGENT[agent].ID = TransformState(d,n,C.AGENT[agent].ID,s)
+
+		C.CausalIndependence(false)
+		C.CausalIndependence(false)
 		
-		for direction := 0; direction < C.N; direction++ {
-			
-			var send,recv C.Message
-			
-			neighbour := C.AGENT[agent].Neigh[direction]
-			
-			if neighbour == 0 {
-				continue // wall signal
-			}
-
-			recv = C.AcceptFromChannel(neighbour,agent)
-
-			// ****************** PROCESS *********************
-
-			switch recv.Phase {
-				
-			case C.TICK: // me - this is foreach direction...
-
-				C.AGENT[agent].V[direction] = recv.Value
-				send.Phase = C.TAKE
-				// Because there is private communication with each agent, this is now inside the loop
-				send.Value = EvolveAndOfferDeltaPsi(agent,direction)
-				C.AGENT[agent].Offer[direction] = send.Value
-				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
-
-			case C.TAKE: // YOU
-				transfer_offer := recv.Value
-				send.Value = transfer_offer
-				C.AGENT[agent].Accept[direction] = transfer_offer // reserve amount
-				C.AGENT[agent].Psi -= transfer_offer
-				send.Phase = C.TACK
-				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
-
-			case C.TACK: // me
-				transfer_offer := recv.Value
-
-				if C.AGENT[agent].Offer[direction] == transfer_offer {
-					C.AGENT[agent].Psi += transfer_offer
-					send.Value = transfer_offer
-				} else {
-					send.Value = C.NOTACCEPT
-				}
-				C.AGENT[agent].Accept[direction] = 0
-				C.AGENT[agent].Offer[direction] = 0
-				send.Phase = C.TOCK
-				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
-				
-			case C.TOCK: // YOU - initiate a change / Xfer
-
-				if recv.Value == C.NOTACCEPT {
-					// Move the reserved amount back
-					C.AGENT[agent].Psi += C.AGENT[agent].Accept[direction]
-				}
-
-				C.AGENT[agent].Accept[direction] = 0  // clear reservation, consider sent
-				C.AGENT[agent].Offer[direction] = 0
-				send.Value = C.AGENT[agent].Psi
-				send.Phase = C.TICK
-				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
-			}
-		}
 	}
 }
 
 // ****************************************************************
-// Now we must be able to handle negative amounts too: debt, else just a diffusion problem
+
+func InferPolarity(agent,d,dbar int) (byte,byte) {
+
+	nf := C.AGENT[agent].Neigh[d]
+	nb := C.AGENT[agent].Neigh[dbar]
+
+	m := C.AGENT[agent].ID
+	f := C.AGENT[nf].ID
+	b := C.AGENT[nb].ID
+
+	state := fmt.Sprintf("%c%c%c",f,m,b)
+
+	var exists bool
+
+	switch d {
+
+	case C.EAST: _, exists = X_TRANSITION_MATRIX[state]
+	case C.NORTH: _, exists = Y_TRANSITION_MATRIX[state]
+	}
+
+	if exists {
+		return f,b
+	}
+
+	state = fmt.Sprintf("%c%c%c",b,m,f)
+
+	switch d {
+
+	case C.EAST: _, exists = X_TRANSITION_MATRIX[state]
+	case C.NORTH: _, exists = Y_TRANSITION_MATRIX[state]
+	}
+
+	if exists {
+		return b,f
+	}
+
+	return 'x','x'
+}
+
 // ****************************************************************
 
-func EvolveAndOfferDeltaPsi(agent,direction int) float64 {
+func TransformState(direction int,fwd,me,bwd byte) byte {
 
-	const mass = 111
-	const coupling = 11
+	state := fmt.Sprintf("%c%c%c",fwd,me,bwd)
 
-	const dt = 1.0
+	var newstate byte
+	var exists bool
 
-	// Because this is private for each neighbour, the
-	// Laplacian is just the gradient for each individual direction
+	switch direction {
 
-	d2 := C.AGENT[agent].V[direction] - C.AGENT[agent].Psi
+	case C.EAST: newstate, exists = X_TRANSITION_MATRIX[state]
+	case C.NORTH: newstate, exists = Y_TRANSITION_MATRIX[state]
+	}
 
-	// This is negative when Psi is higher than neighbours
-	// Increase inv_velocity theta to increase wavelength
+	if exists {
+		return newstate
+	} else {
+		return me
+	}
+}
 
-	dtheta := d2 / mass
+// ****************************************************************
 
-	// Stability, reduce velocity more quicky (leads to quicker smaller oscillations)
+func ShowStates(st_rows [C.Ylim]string,tmax,xlim,ylim int) {
+	
+	for t := 1; t < tmax; t++ {
+		
+		fmt.Printf("\x1b[2J") // CLS
+		
+		for y := 0; y < ylim; y++ {
+			
+			for x := 0; x < xlim; x++ {
+				
+				if !C.Blocked(st_rows,x,y) {
 
-	C.AGENT[agent].Theta += float64(int(dtheta * dt+0.5) % PERIOD)
+					observable := C.AGENT[C.COORDS[x][y]].ID
+					
+					fmt.Printf("%3c",observable)
+					
+				} else {
+					fmt.Printf("%3c",' ')
+				}
+			}
+			
+			fmt.Println("")
+		}
 
-	deltaPsi := C.AGENT[agent].Theta * dt // displacement = velocity x time
-
-	// C.AGENT[agent].Psi += deltaPsi deferred to xfer
-	return deltaPsi / coupling
-
+		const base_timescale = 15  // smaller is faster
+		const noflicker = 10
+		time.Sleep(noflicker * time.Duration(base_timescale) * time.Millisecond) // random noise
+	}
 }
 

@@ -32,11 +32,11 @@ type STAgent struct {
 	Psi      float64
 	PsiDot   float64
 	Theta    float64
-	Momentum float64
+	ID       byte
 
-	Neigh   [N]int
-	V       [N]float64 
-	Moment  [N]float64
+	Neigh    [N]int
+	V        [N]float64 
+	NeighID  [N]byte
 
 	// Conservation equipment
 	Offer  [N]float64
@@ -44,6 +44,14 @@ type STAgent struct {
 	Xfer int
 	Cancel int
 }
+
+// **********************************************************
+
+const DIMENSION = 2
+const NORTH = 0
+const EAST  = 1
+const SOUTH = 2
+const WEST  = 3
 
 // **********************************************************
 
@@ -60,8 +68,10 @@ const NOTACCEPT = -1234567.0
 
 type Message struct {
 
-	Value   float64
-	Angle   float64
+	Value    float64
+	Angle    float64
+	Momentum float64
+
 	Phase   int      // proto phase
 }
 
@@ -108,6 +118,8 @@ func Initialize(st_rows [Ylim]string, DoF float64) {
 	for y := 1; y < len(st_rows)-1; y++ {
 
 		for x := 0; x < len(st_rows[y])-1; x++ {
+
+			AGENT[COORDS[x][y]].ID = st_rows[y][x]
 
 			switch st_rows[y][x] {
 
@@ -159,10 +171,10 @@ func InitAgentGeomAndAdj(x,y int,amplitude float64) {
 
 	// Shortcut
 
-	AGENT[agent].Neigh[0] = n
-	AGENT[agent].Neigh[1] = s
-	AGENT[agent].Neigh[2] = e
-	AGENT[agent].Neigh[3] = w
+	AGENT[agent].Neigh[NORTH] = n
+	AGENT[agent].Neigh[SOUTH] = s
+	AGENT[agent].Neigh[EAST] = e
+	AGENT[agent].Neigh[WEST] = w
 
 	if amplitude > 0 {
 		POSITION = agent

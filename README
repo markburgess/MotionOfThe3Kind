@@ -69,6 +69,11 @@ There are different models of virtual propagation for waves and particles
 
 9. PushMePullYou_Payment.go  - a purely numerical test of packet exchange 2 agents
 
+10.SemanticTranslation.go - a finite state machine approach to unform motion in a
+                            straight line. Now does a process remember its direction?
+                            This model shows that a simple state machine treating X,Y 
+                            directions separately preserves these directions, but can't
+                            describe combined X,Y motion
 
 -----------------------
 

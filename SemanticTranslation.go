@@ -56,9 +56,9 @@ func main () {
 	st[17] = "*...................................*"
 	st[18] = "*...................................*"
 	st[19] = "*...................................*"
-	st[20] = "*...................................*"
-	st[21] = "*...................................*"
-	st[22] = "*...................................*"
+	st[20] = "*.....................N.............*"
+	st[21] = "*....................W+E............*"
+	st[22] = "*.....................S.............*"
 	st[23] = "*...................................*"
 	st[24] = "*...................................*"
 	st[25] = "*...................................*"
@@ -129,8 +129,14 @@ func InitTransitionMatrix() {
 	X_TRANSITION_MATRIX["EE+"] = '_'
 	X_TRANSITION_MATRIX["E_+"] = '+'
 	X_TRANSITION_MATRIX["++W"] = 'W'
+	X_TRANSITION_MATRIX["+_W"] = '+'
 	X_TRANSITION_MATRIX["O_W"] = 'W'
 	X_TRANSITION_MATRIX["WW."] = '.'
+	Y_TRANSITION_MATRIX["W.W"] = 'W'
+	Y_TRANSITION_MATRIX["EEW"] = '+'
+	Y_TRANSITION_MATRIX["_.W"] = 'W'
+	Y_TRANSITION_MATRIX["E_W"] = '+'
+	Y_TRANSITION_MATRIX["+.W"] = 'W'
 
 	// orth
 
@@ -138,8 +144,14 @@ func InitTransitionMatrix() {
 	Y_TRANSITION_MATRIX["NN+"] = '_'
 	Y_TRANSITION_MATRIX["N_+"] = '+'
 	Y_TRANSITION_MATRIX["++S"] = 'S'
+	Y_TRANSITION_MATRIX["+_S"] = '+'
 	Y_TRANSITION_MATRIX["O_S"] = 'S'
 	Y_TRANSITION_MATRIX["SS."] = '.'
+	Y_TRANSITION_MATRIX["N.S"] = 'S'
+	Y_TRANSITION_MATRIX["NNS"] = '+'
+	Y_TRANSITION_MATRIX["_.S"] = 'S'
+	Y_TRANSITION_MATRIX["N_S"] = '+'
+	Y_TRANSITION_MATRIX["+.S"] = 'S'
 }
 
 // ****************************************************************

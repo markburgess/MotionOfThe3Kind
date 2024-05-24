@@ -52,9 +52,9 @@ func main () {
 	st[12] = "*...................................*"
 	st[13] = "*...................................*"
 	st[14] = "*...................................*"
-	st[15] = "*.....................B.............*"
-	st[16] = "*....................R+L............*"
-	st[17] = "*.....................T.............*"
+	st[15] = "*....................B..............*"
+	st[16] = "*...................R+L.............*"
+	st[17] = "*....................T..............*"
 	st[18] = "*...................................*"
 	st[19] = "*...................................*"
 	st[20] = "*...................................*"
@@ -79,7 +79,7 @@ func main () {
 	st[39] = "*...................................*" // >
 	st[40] = "*...................................*"
 	st[41] = "*...................................*"
-	st[42] = "*...................................*"
+	st[42] = "*...................................>"
 	st[43] = "*...................................*"
 	st[44] = "*...................................*"
 	st[45] = "*...................................*"
@@ -162,22 +162,22 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX["..TR"] = 'm'
 	S_TRANSITION_MATRIX["...m"] = 'h'
 	S_TRANSITION_MATRIX["..+m"] = 'L'
-	S_TRANSITION_MATRIX["..RL"] = '.'
 	S_TRANSITION_MATRIX["..m+"] = 'B'
+	S_TRANSITION_MATRIX["..RL"] = '.'
 
 	S_TRANSITION_MATRIX["..Lh"] = 'l'
 	S_TRANSITION_MATRIX["..hB"] = 'r'
 	S_TRANSITION_MATRIX["..lm"] = 'T'
-	S_TRANSITION_MATRIX["..TB"] = '.'
 	S_TRANSITION_MATRIX["..mr"] = 'R'
-
+	S_TRANSITION_MATRIX[".mmr"] = 'R'
 	S_TRANSITION_MATRIX["..LT"] = '.'
 	S_TRANSITION_MATRIX["..RB"] = '.'
 	S_TRANSITION_MATRIX["LLBB"] = 'x'
+	S_TRANSITION_MATRIX["LBLB"] = '.'
 	S_TRANSITION_MATRIX["x..."] = '.'
-
 	S_TRANSITION_MATRIX["xx.."] = '.'
 
+	S_TRANSITION_MATRIX["TTRR"] = '+'
 	S_TRANSITION_MATRIX["TLBR"] = '+'
 
 	// Kill off stragglers
@@ -326,19 +326,8 @@ func TransformDiagonalState(agent int) bool {
 
 	// we now have a string of length 4, but we don't know where it might begin
 
-	var dead bool = false
-
-	if C.AGENT[agent].ID == 'x' {
-		dead = true
-	}
-
 	if len(symmetry) == 1 {
-
-		if dead {
-			C.AGENT[agent].ID = '.'
-		}
-
-		return false
+		return false    // delete this to eliminate exhaust trail
 	}
 
 	for spin := 0; spin < C.N; spin++ {

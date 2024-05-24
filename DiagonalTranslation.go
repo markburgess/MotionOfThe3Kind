@@ -27,6 +27,7 @@ const PERIOD = C.WAVELENGTH * wrange
 
 var Y_TRANSITION_MATRIX = make(map[string]byte)
 var X_TRANSITION_MATRIX = make(map[string]byte)
+var S_TRANSITION_MATRIX = make(map[string]byte)
 
 // ****************************************************************
 
@@ -56,9 +57,9 @@ func main () {
 	st[17] = "*...................................*"
 	st[18] = "*...................................*"
 	st[19] = "*...................................*"
-	st[20] = "*.....................N.............*"
-	st[21] = "*....................W+E............*"
-	st[22] = "*.....................S.............*"
+	st[20] = "*...................................*"
+	st[21] = "*...................................*"
+	st[22] = "*...................................*"
 	st[23] = "*...................................*"
 	st[24] = "*...................................*"
 	st[25] = "*...................................*"
@@ -68,9 +69,9 @@ func main () {
 	st[29] = "*...................................*"  // X
 	st[30] = "*...................................*"
 	st[31] = "*...................................*"
-	st[32] = "*...................................*"
-	st[33] = "*...................................*"
-	st[34] = "*...................................*"
+	st[32] = "*.......N...........................*"
+	st[33] = "*.......+...........................*"
+	st[34] = "*.......S...........................*"
 	st[35] = "*...................................*"
 	st[36] = "*...................................*"
 	st[37] = "*...................................*" // >
@@ -91,9 +92,9 @@ func main () {
 	st[52] = "*...................................*"
 	st[53] = "*...................................*"
 	st[54] = "*...................................*"
-	st[55] = "*...................................*"
-	st[56] = "*...................................*"
-	st[57] = "*...................................*"
+	st[55] = "*................R..................*"
+	st[56] = "*...............T+B.................*"
+	st[57] = "*................L..................*"
 	st[58] = "*...................................*"
 	st[59] = "*...................................*"
 	st[60] = "*...................................*"
@@ -105,10 +106,10 @@ func main () {
 	st[66] = "*...................................*"
 	st[67] = "*...................................*"
 	st[68] = "*...................................*"
-	st[69] = "*......N............................*"
-	st[70] = "*.....W+E...........................*"
-	st[71] = "*......S............................*"
-	st[72] = "*...................................*"
+	st[69] = "*...................................*"
+	st[70] = "*......T............................*"
+	st[71] = "*.....L+R...........................*"
+	st[72] = "*......B............................*"
 	st[73] = "*...................................*"
 	st[74] = "*...................................*"
 	st[75] = "*************************************"
@@ -140,8 +141,6 @@ func InitTransitionMatrix() {
 	X_TRANSITION_MATRIX["E_W"] = '+'
 	X_TRANSITION_MATRIX["+.W"] = 'W'
 
-	X_TRANSITION_MATRIX[".X."] = '.'
-
 	// North-South, Y axis  ^^^^
 
 	Y_TRANSITION_MATRIX["..N"] = 'N'
@@ -157,9 +156,34 @@ func InitTransitionMatrix() {
 	Y_TRANSITION_MATRIX["N_S"] = '+'
 	Y_TRANSITION_MATRIX["+.S"] = 'S'
 
-	Y_TRANSITION_MATRIX[".X."] = '.'
+	// Spin transitions: + transition given NSEW
+	// These are interior spin "eigenstates"
 
-	//Y_TRANSITION_MATRIX[".+."] = '.'
+	S_TRANSITION_MATRIX["..TR"] = 'm'
+	S_TRANSITION_MATRIX["...m"] = 'h'
+	S_TRANSITION_MATRIX["..+m"] = 'L'
+	S_TRANSITION_MATRIX["..RL"] = '.'
+	S_TRANSITION_MATRIX["..m+"] = 'B'
+
+	S_TRANSITION_MATRIX["..Lh"] = 'l'
+	S_TRANSITION_MATRIX["..hB"] = 'r'
+	S_TRANSITION_MATRIX["..lm"] = 'T'
+	S_TRANSITION_MATRIX["..TB"] = '.'
+	S_TRANSITION_MATRIX["..mr"] = 'R'
+
+	S_TRANSITION_MATRIX["..LT"] = '.'
+	S_TRANSITION_MATRIX["..RB"] = '.'
+	S_TRANSITION_MATRIX["LLBB"] = 'x'
+	S_TRANSITION_MATRIX["x..."] = '.'
+
+	S_TRANSITION_MATRIX["xx.."] = '.'
+
+	S_TRANSITION_MATRIX["TLBR"] = '+'
+
+	// Kill off stragglers
+
+	S_TRANSITION_MATRIX["...."] = '.'
+
 }
 
 // ****************************************************************
@@ -184,11 +208,15 @@ func UpdateAgent_Flow(agent int) {
 
 		// An FSM propagator
 	
-		// if I am downstream, prepare to receive
-		// we must have a lattice to preserve semantic continuity of direction
-		// this is borne out my the existence of dipoles
+		if TransformDiagonalState(agent) {
 
-		TransformDiagonalState(agent)
+			// Eventually everything can convert to this 
+			// rotational eigenfunction method
+			C.CausalIndependence(false)
+			continue
+		}
+
+		C.CausalIndependence(false)
 
 		// X axis
 
@@ -282,64 +310,66 @@ func TransformState(direction int,fwd,me,bwd byte) byte {
 
 // ****************************************************************
 
-func TransformDiagonalState(agent int) {
+func TransformDiagonalState(agent int) bool {
 
-	nagent := C.AGENT[agent].Neigh[C.NORTH]
-	sagent := C.AGENT[agent].Neigh[C.SOUTH]
-	eagent := C.AGENT[agent].Neigh[C.EAST]
-	wagent := C.AGENT[agent].Neigh[C.WEST]
+	// form a string of the neighbour states clockwise around centre
 
-	nid := C.AGENT[nagent].ID
-	sid := C.AGENT[sagent].ID
-	eid := C.AGENT[eagent].ID
-	wid := C.AGENT[wagent].ID
+	var state = make([]byte,4)
+	var symmetry = make(map[byte]int)
 
-	ne := sid == 'E' && wid == 'N' 
+	for d := 0; d < C.N; d++ { // make sure to search for the start and then go a whole cycle
 
-	if ne {
-		C.AGENT[agent].ID = 'X'
+		neigh := C.AGENT[agent].Neigh[d]
+		state[d] = C.AGENT[neigh].ID
+		symmetry[state[d]]++
 	}
 
-	nw := sid == 'E' && eid == 'N' 
+	// we now have a string of length 4, but we don't know where it might begin
 
-	if nw {
-		C.AGENT[agent].ID = 'X'
+	var dead bool = false
+
+	if C.AGENT[agent].ID == 'x' {
+		dead = true
 	}
 
-	se := nid == 'E' && wid == 'N'
+	if len(symmetry) == 1 {
 
-	if se {
-		C.AGENT[agent].ID = 'X'
-	}
-
-	sw := nid == 'E' && eid == 'N'
-
-	if sw {
-		C.AGENT[agent].ID = 'X'
-	}
-
-	var haveN, haveE, haveH bool
-
-	for d := 0; d < C.N; d++ {
-
-		neigh := C.AGENT[agent].Neigh[d] 
-
-		if d % 2 == 1 && C.AGENT[neigh].ID == 'N' {
-			haveN = true
+		if dead {
+			C.AGENT[agent].ID = '.'
 		}
 
-		if d % 2 == 0 && C.AGENT[neigh].ID == 'E' {
-			haveE = true
-		}
-		if C.AGENT[neigh].ID == 'X' {
-			haveH = true
-		}
+		return false
 	}
 
-	if (haveN || haveE) && haveH {
-		C.AGENT[agent].ID = 'X'
+	for spin := 0; spin < C.N; spin++ {
+
+		// Search anti clockwise for pattern orientation (Y inverted on screen)
+
+		newstate, exists := S_TRANSITION_MATRIX[string(state)]
+
+		if exists {
+			C.AGENT[agent].ID = newstate
+			return true
+		}
+
+		state = Rotate(state)
 	}
 
+	return false
+}
+
+// ****************************************************************
+
+func Rotate(state []byte) []byte {
+
+	var newstate = make([]byte,4)
+
+	for i := 1; i <= C.N; i++ {
+
+		newstate[i-1] += state[i % C.N]
+	}
+
+	return newstate
 }
 
 // ****************************************************************

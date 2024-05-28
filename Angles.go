@@ -1,13 +1,8 @@
 ///////////////////////////////////////////////////////////////
 //
-// Cellular automaton version of conserved token passing.
-// This is the pass the parcel protocol with conservation
-// the only wave to ensure true conservation under virtual diffusion.
-//
-// When we pass PSI with conserved number, we don't get waves in the
-// usual way, but something between diffusion and wave interference
-// because each direction is treated like a private transaction
-// whereas the state is shared between directions otherwise
+// Cellular automaton version of diagonal motion at arbitrary angles
+// on the lattice. It requires agents ot be able to count for themselves
+// by their internal state machines
 //
 ///////////////////////////////////////////////////////////////
 

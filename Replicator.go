@@ -1,13 +1,7 @@
 ///////////////////////////////////////////////////////////////
 //
-// Cellular automaton version of conserved token passing.
-// This is the pass the parcel protocol with conservation
-// the only wave to ensure true conservation under virtual diffusion.
-//
-// When we pass PSI with conserved number, we don't get waves in the
-// usual way, but something between diffusion and wave interference
-// because each direction is treated like a private transaction
-// whereas the state is shared between directions otherwise
+// Cellular automaton replicator of string agent information, like DNA
+// This is a form of semantic translation by cloning
 //
 ///////////////////////////////////////////////////////////////
 

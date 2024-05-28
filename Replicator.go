@@ -16,15 +16,6 @@ import (
 // **********************************************************
 
 const DoF = 20000
-const wrange = 100
-const PERIOD = C.WAVELENGTH * wrange
-
-type TrMatrix struct {
-
-	Next byte   // my next state
-	Prior byte  // mystate
-}
-
 var S_TRANSITION_MATRIX = make(map[string]byte)
 
 // ****************************************************************

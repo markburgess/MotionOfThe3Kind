@@ -76,11 +76,11 @@ func main () {
 	st[32] = "....................................."
 	st[33] = "....................................."
 	st[34] = "....................................."
-	st[35] = ".....xxx............................."
-	st[36] = ".....s..............................."
-	st[37] = ".....s..............................." // >
-	st[38] = ".....s..............................." // >
-	st[39] = ".....s..............................." // >
+	st[35] = "....................................."
+	st[36] = "....................................."
+	st[37] = "....................................." // >
+	st[38] = "....................................." // >
+	st[39] = "....................................." // >
 	st[40] = "....................................."
 	st[41] = "....................................."
 	st[42] = "....................................."
@@ -92,31 +92,31 @@ func main () {
 	st[48] = "....................................."
 	st[49] = "....................................."
 	st[50] = "....................................."
-	st[51] = ".......................+12..........X"
-	st[52] = ".......................1............."
-	st[53] = ".......................2............."
-	st[54] = ".......................3............."
-	st[55] = ".......................4............."
+	st[51] = "....................................."
+	st[52] = "....................................."
+	st[53] = "....................................."
+	st[54] = "....................................."
+	st[55] = "....................................."
 	st[56] = "....................................."
 	st[57] = "....................................."
 	st[58] = "....................................."
 	st[59] = "....................................."
 	st[60] = "....................................."
-	st[61] = "....................................."
-	st[62] = "....................................."
-	st[63] = "*.........21+........................"
-	st[64] = "............1........................"
-	st[65] = "............2........................"
-	st[66] = "............3........................"
-	st[67] = "............4........................"
-	st[68] = "............5........................"
-	st[69] = "............6........................"
-	st[70] = "............7........................"
-	st[71] = "............8........................"
-	st[72] = "............9........................"
+	st[61] = ">...H................................"
+	st[62] = "...L1R..............................."
+	st[63] = "....2................................"
+	st[64] = "....3................................"
+	st[65] = "....4................................"
+	st[66] = "....T................................"
+	st[67] = "....................................."
+	st[68] = "....................................."
+	st[69] = "....................................."
+	st[70] = "....................................."
+	st[71] = "....................................."
+	st[72] = "....................................."
 	st[73] = "....................................."
 	st[74] = "....................................."
-	st[75] = "............*.........X.............."
+	st[75] = "....................................."
 
 	C.Initialize(st,DoF)
 	InitTransitionMatrix()
@@ -132,63 +132,77 @@ func InitTransitionMatrix() {
 	// If there is a fifth element, then it's a conditional prior
 	// else it's a wildcard null entry
 
-	S_TRANSITION_MATRIX["1...."] = 'A'
-	S_TRANSITION_MATRIX["A+.."]  = 'L'
-	S_TRANSITION_MATRIX["+A.."]  = 'R'
-	S_TRANSITION_MATRIX["AA.+"]  = 'L'
+	S_TRANSITION_MATRIX["LH.."]  = 'l'
+	S_TRANSITION_MATRIX["HR.."]  = 'r'
+
+	S_TRANSITION_MATRIX["R2.."] = 'R'
+	S_TRANSITION_MATRIX["2L.."] = 'L'
+	S_TRANSITION_MATRIX["R3.."] = 'R'
+	S_TRANSITION_MATRIX["3L.."] = 'L'
+	S_TRANSITION_MATRIX["R4.."] = 'R'
+	S_TRANSITION_MATRIX["4L.."] = 'L'
+
+	S_TRANSITION_MATRIX["H..."] = 'h'
+	S_TRANSITION_MATRIX["l1r."] = 'H'
+	S_TRANSITION_MATRIX["hl1r"] = '1'
+	S_TRANSITION_MATRIX["1L2R"] = '2'
+	S_TRANSITION_MATRIX["2L3R"] = '3'
+	S_TRANSITION_MATRIX["3L4R"] = '4'
+	S_TRANSITION_MATRIX["4LTR"] = 'T'
+
+	S_TRANSITION_MATRIX["T...T"] = '.'
+
+	// Now we shifted everything, and t -> restores previous state
+	// but now signal back the count
+        // S_TRANSITION_MATRIX["4...t"] = 'T'
+
+	S_TRANSITION_MATRIX["TL..L"] = 'E'
+	S_TRANSITION_MATRIX["RT..R"] = 'W'
+
+	S_TRANSITION_MATRIX["E4L."] = 'E'
+	S_TRANSITION_MATRIX["E3L."] = 'E'
+	S_TRANSITION_MATRIX["E2l."] = 'E'
+	S_TRANSITION_MATRIX["E1..l"] = 'E'
+	S_TRANSITION_MATRIX["Eh.."] = 'E'
+
+	S_TRANSITION_MATRIX["R4W."] = 'W'
+	S_TRANSITION_MATRIX["R3W."] = 'W'
+	S_TRANSITION_MATRIX["r2W."] = 'W'
+	S_TRANSITION_MATRIX[".1W.r"] = 'W'
+	S_TRANSITION_MATRIX["hW.."] = 'W'
+
+	// ** 2 **
+
+	S_TRANSITION_MATRIX["E1W."]  = '>'
+
+	S_TRANSITION_MATRIX[">W..W"] = 'G'
+	S_TRANSITION_MATRIX["G1W."]  = '1'
+	S_TRANSITION_MATRIX["12W."]  = '2'
+	S_TRANSITION_MATRIX["23W."]  = '3'
+	S_TRANSITION_MATRIX["34W."]  = '4'
+	S_TRANSITION_MATRIX["4T..W"]  = 'T'
+
+	S_TRANSITION_MATRIX[">E21"]  = '.'
+	S_TRANSITION_MATRIX[".E32"]  = '.'
+	S_TRANSITION_MATRIX[".E43"]  = '.'
+	S_TRANSITION_MATRIX[".ET4"]  = '.'
+	S_TRANSITION_MATRIX["E.T.T"]  = '.'
+	S_TRANSITION_MATRIX["E..."]  = '.'
+	S_TRANSITION_MATRIX[">...E"]  = '.'
+
+	S_TRANSITION_MATRIX["G..."]  = '<'
+	S_TRANSITION_MATRIX["1>.."]  = 'L'
+	S_TRANSITION_MATRIX["<1.."]  = 'R'
+
+	S_TRANSITION_MATRIX["<<>1>"]  = 'H'
+	S_TRANSITION_MATRIX["<.1."]  = 'H'
+	S_TRANSITION_MATRIX["1<.."] = 'L'
+
+	S_TRANSITION_MATRIX["LG.."]  = '.'
+	S_TRANSITION_MATRIX["GR.."]  = '.'
 
 
-	S_TRANSITION_MATRIX["LR.."]  = 'X'
-	S_TRANSITION_MATRIX["Xr.."]  = 'x'
-	S_TRANSITION_MATRIX["RA.."]  = 'r'
-
-	// Duplicate Right
-
-	S_TRANSITION_MATRIX["R1..A"]  = '1'
-	S_TRANSITION_MATRIX["r1.."]  = '1'
-	S_TRANSITION_MATRIX["12.."]  = '2'
-	S_TRANSITION_MATRIX["23.."]  = '3'
-	S_TRANSITION_MATRIX["34.."]  = '4'
-	S_TRANSITION_MATRIX["45.."]  = '5'
-	S_TRANSITION_MATRIX["56.."]  = '6'
-	S_TRANSITION_MATRIX["67.."]  = '7'
-	S_TRANSITION_MATRIX["78.."]  = '8'
-	S_TRANSITION_MATRIX["89.."]  = '9'
-
-	// Duplicate left
-
-	S_TRANSITION_MATRIX["1L..A"]  = '1'
-	S_TRANSITION_MATRIX["21..."]  = '2'
-	S_TRANSITION_MATRIX["32..."]  = '3'
-	S_TRANSITION_MATRIX["43..."]  = '4'
-	S_TRANSITION_MATRIX["54..."]  = '5'
-	S_TRANSITION_MATRIX["65..."]  = '6'
-	S_TRANSITION_MATRIX["76..."]  = '7'
-	S_TRANSITION_MATRIX["87..."]  = '8'
-	S_TRANSITION_MATRIX["98..."]  = '9'
-
-	// Unzip
-
-
-	// Clear
-
-/*	S_TRANSITION_MATRIX["RLL."]  = '.'
-	S_TRANSITION_MATRIX["AAL."]  = '.'
-	S_TRANSITION_MATRIX["RA.."]  = '+'
-
-	S_TRANSITION_MATRIX["....A"]  = '.'
-	S_TRANSITION_MATRIX["....L"]  = '.'
-	S_TRANSITION_MATRIX["....R"]  = '.'
-
-	S_TRANSITION_MATRIX["...1A"]  = '+'
-
-	S_TRANSITION_MATRIX["...LA"]  = '.'
-
-	S_TRANSITION_MATRIX["..RA."]  = '+'
-	S_TRANSITION_MATRIX["LR1R+"]  = 'X' */
-
-	S_TRANSITION_MATRIX["xs..."]  = 's'
-	S_TRANSITION_MATRIX["ss..."]  = 's'
+	S_TRANSITION_MATRIX["T...T"] = '.'
 
 }
 

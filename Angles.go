@@ -101,8 +101,8 @@ func main () {
 	st[71] = "....................................."
 	st[72] = "....................................."
 	st[73] = "....................................."
-	st[74] = "....................................."
-	st[75] = "....................................."
+	st[74] = "....*................................"
+	st[75] = "....*................................"
 
 	C.Initialize(st,DoF)
 	InitTransitionMatrix()
@@ -125,12 +125,17 @@ func InitTransitionMatrix() {
 
 	S_TRANSITION_MATRIX["R2.."] = 'R'
 	S_TRANSITION_MATRIX["2L.."] = 'L'
+
 	S_TRANSITION_MATRIX["R3.."] = 'R'
 	S_TRANSITION_MATRIX["3L.."] = 'L'
+
 	S_TRANSITION_MATRIX["R4.."] = 'R'
 	S_TRANSITION_MATRIX["4L.."] = 'L'
 
-	S_TRANSITION_MATRIX["H..."] = 'h'
+	S_TRANSITION_MATRIX["H...|."] = 'h'
+
+	// 
+
 	S_TRANSITION_MATRIX["hl1r"] = '1'
 	S_TRANSITION_MATRIX["1L2R"] = '2'
 	S_TRANSITION_MATRIX["2L3R"] = '3'
@@ -138,7 +143,7 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX["4LTR"] = 'T'
 
 	S_TRANSITION_MATRIX["T...|T"] = '.'
-/*
+
 	// Now we shifted everything, and t -> restores previous state
 	// but now signal back the count
 	// But we don't want to do this, we want to shift right and then return
@@ -150,45 +155,47 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX["E3L."] = 'E'
 	S_TRANSITION_MATRIX["E2l."] = 'E'
 	S_TRANSITION_MATRIX["E1..|l"] = 'E'
-	S_TRANSITION_MATRIX["Eh.."] = 'E'
+	S_TRANSITION_MATRIX["Eh.."] = 'e'
 
 	S_TRANSITION_MATRIX["R4W."] = 'W'
 	S_TRANSITION_MATRIX["R3W."] = 'W'
 	S_TRANSITION_MATRIX["r2W."] = 'W'
 	S_TRANSITION_MATRIX[".1W.|r"] = 'W'
-	S_TRANSITION_MATRIX["hW.."] = 'W'
+	S_TRANSITION_MATRIX["hW.."] = 'w'
 
 	// ** 2 **
+	// relabel head
+	S_TRANSITION_MATRIX["e1w."]  = '^'
 
-	S_TRANSITION_MATRIX["E1W."]  = '>'
+	// Shart shifting spine right
 
-	S_TRANSITION_MATRIX[">W..|W"] = 'G'
-	S_TRANSITION_MATRIX["G1W."]  = '1'
+	S_TRANSITION_MATRIX["^W..|w"] = 'F'
+
+	S_TRANSITION_MATRIX["F1W."]  = '1'
 	S_TRANSITION_MATRIX["12W."]  = '2'
 	S_TRANSITION_MATRIX["23W."]  = '3'
 	S_TRANSITION_MATRIX["34W."]  = '4'
 	S_TRANSITION_MATRIX["4T..|W"]  = 'T'
 
-	S_TRANSITION_MATRIX[">E21"]  = '.'
+	S_TRANSITION_MATRIX["^E21"]  = '.'
 	S_TRANSITION_MATRIX[".E32"]  = '.'
 	S_TRANSITION_MATRIX[".E43"]  = '.'
 	S_TRANSITION_MATRIX[".ET4"]  = '.'
 	S_TRANSITION_MATRIX["E.T.|T"]  = '.'
+
 	S_TRANSITION_MATRIX["E..."]  = '.'
-	S_TRANSITION_MATRIX[">...|E"]  = '.'
+	S_TRANSITION_MATRIX["....|E"]  = '.'
+	S_TRANSITION_MATRIX["E^..|e"]  = '.'
 
-	S_TRANSITION_MATRIX["G..."]  = '<'
-	S_TRANSITION_MATRIX["1>.."]  = 'L'
-	S_TRANSITION_MATRIX["<1.."]  = 'R'
+	S_TRANSITION_MATRIX["F..."]  = '/'
+	S_TRANSITION_MATRIX["1/..|."]  = 'L'
+	S_TRANSITION_MATRIX["/1..|."]  = 'R'
 
-	S_TRANSITION_MATRIX["<<>1|>"]  = 'H'
-	S_TRANSITION_MATRIX["<.1."]  = 'H'
-	S_TRANSITION_MATRIX["1<.."] = 'L'
+	S_TRANSITION_MATRIX["/l1r|F"]  = 'H'
+	S_TRANSITION_MATRIX["LF.."]  = 'l'
+	S_TRANSITION_MATRIX["FR.."]  = 'r'
 
-	S_TRANSITION_MATRIX["LG.."]  = '.'
-	S_TRANSITION_MATRIX["GR.."]  = '.'
-
-*/
+	S_TRANSITION_MATRIX["H...|/"]  = '.'
 }
 
 // ****************************************************************

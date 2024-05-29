@@ -131,7 +131,6 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX["4L.."] = 'L'
 
 	S_TRANSITION_MATRIX["H..."] = 'h'
-//	S_TRANSITION_MATRIX["l1r."] = 'H'
 	S_TRANSITION_MATRIX["hl1r"] = '1'
 	S_TRANSITION_MATRIX["1L2R"] = '2'
 	S_TRANSITION_MATRIX["2L3R"] = '3'
@@ -139,7 +138,7 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX["4LTR"] = 'T'
 
 	S_TRANSITION_MATRIX["T...|T"] = '.'
-
+/*
 	// Now we shifted everything, and t -> restores previous state
 	// but now signal back the count
 	// But we don't want to do this, we want to shift right and then return
@@ -188,7 +187,7 @@ func InitTransitionMatrix() {
 
 	S_TRANSITION_MATRIX["LG.."]  = '.'
 	S_TRANSITION_MATRIX["GR.."]  = '.'
-/*
+
 */
 }
 

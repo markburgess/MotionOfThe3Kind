@@ -118,6 +118,8 @@ func InitTransitionMatrix() {
 	// If there is a fifth element, then it's a conditional prior
 	// else it's a wildcard null entry
 
+	// First shift forward phase
+
 	S_TRANSITION_MATRIX["LH.."]  = 'l'
 	S_TRANSITION_MATRIX["HR.."]  = 'r'
 
@@ -129,67 +131,65 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX["4L.."] = 'L'
 
 	S_TRANSITION_MATRIX["H..."] = 'h'
-	S_TRANSITION_MATRIX["l1r."] = 'H'
+//	S_TRANSITION_MATRIX["l1r."] = 'H'
 	S_TRANSITION_MATRIX["hl1r"] = '1'
 	S_TRANSITION_MATRIX["1L2R"] = '2'
 	S_TRANSITION_MATRIX["2L3R"] = '3'
 	S_TRANSITION_MATRIX["3L4R"] = '4'
 	S_TRANSITION_MATRIX["4LTR"] = 'T'
 
-	S_TRANSITION_MATRIX["T...T"] = '.'
+	S_TRANSITION_MATRIX["T...|T"] = '.'
 
 	// Now we shifted everything, and t -> restores previous state
 	// but now signal back the count
-        // S_TRANSITION_MATRIX["4...t"] = 'T'
+	// But we don't want to do this, we want to shift right and then return
 
-	S_TRANSITION_MATRIX["TL..L"] = 'E'
-	S_TRANSITION_MATRIX["RT..R"] = 'W'
+	S_TRANSITION_MATRIX["TL..|L"] = 'E'
+	S_TRANSITION_MATRIX["RT..|R"] = 'W'
 
 	S_TRANSITION_MATRIX["E4L."] = 'E'
 	S_TRANSITION_MATRIX["E3L."] = 'E'
 	S_TRANSITION_MATRIX["E2l."] = 'E'
-	S_TRANSITION_MATRIX["E1..l"] = 'E'
+	S_TRANSITION_MATRIX["E1..|l"] = 'E'
 	S_TRANSITION_MATRIX["Eh.."] = 'E'
 
 	S_TRANSITION_MATRIX["R4W."] = 'W'
 	S_TRANSITION_MATRIX["R3W."] = 'W'
 	S_TRANSITION_MATRIX["r2W."] = 'W'
-	S_TRANSITION_MATRIX[".1W.r"] = 'W'
+	S_TRANSITION_MATRIX[".1W.|r"] = 'W'
 	S_TRANSITION_MATRIX["hW.."] = 'W'
 
 	// ** 2 **
 
 	S_TRANSITION_MATRIX["E1W."]  = '>'
 
-	S_TRANSITION_MATRIX[">W..W"] = 'G'
+	S_TRANSITION_MATRIX[">W..|W"] = 'G'
 	S_TRANSITION_MATRIX["G1W."]  = '1'
 	S_TRANSITION_MATRIX["12W."]  = '2'
 	S_TRANSITION_MATRIX["23W."]  = '3'
 	S_TRANSITION_MATRIX["34W."]  = '4'
-	S_TRANSITION_MATRIX["4T..W"]  = 'T'
+	S_TRANSITION_MATRIX["4T..|W"]  = 'T'
 
 	S_TRANSITION_MATRIX[">E21"]  = '.'
 	S_TRANSITION_MATRIX[".E32"]  = '.'
 	S_TRANSITION_MATRIX[".E43"]  = '.'
 	S_TRANSITION_MATRIX[".ET4"]  = '.'
-	S_TRANSITION_MATRIX["E.T.T"]  = '.'
+	S_TRANSITION_MATRIX["E.T.|T"]  = '.'
 	S_TRANSITION_MATRIX["E..."]  = '.'
-	S_TRANSITION_MATRIX[">...E"]  = '.'
+	S_TRANSITION_MATRIX[">...|E"]  = '.'
 
 	S_TRANSITION_MATRIX["G..."]  = '<'
 	S_TRANSITION_MATRIX["1>.."]  = 'L'
 	S_TRANSITION_MATRIX["<1.."]  = 'R'
 
-	S_TRANSITION_MATRIX["<<>1>"]  = 'H'
+	S_TRANSITION_MATRIX["<<>1|>"]  = 'H'
 	S_TRANSITION_MATRIX["<.1."]  = 'H'
 	S_TRANSITION_MATRIX["1<.."] = 'L'
 
 	S_TRANSITION_MATRIX["LG.."]  = '.'
 	S_TRANSITION_MATRIX["GR.."]  = '.'
-
-
-	S_TRANSITION_MATRIX["T...T"] = '.'
-
+/*
+*/
 }
 
 // ****************************************************************
@@ -224,7 +224,7 @@ func TransformOrientedState(agent int) {
 	// Search anti clockwise for pattern orientation (NB:Y inverted on screen)
 	// form a string of the neighbour states clockwise around centre
 
-	var state = make([]byte,C.N+1)
+	var state = make([]byte,C.N+2)
 	var vacuum int = 0
 
 	for d := 0; d < C.N; d++ {
@@ -243,7 +243,8 @@ func TransformOrientedState(agent int) {
 
 	// The centre is my state
 
-	state[C.N] = C.AGENT[agent].ID
+	state[C.N] = '|' // conditional
+	state[C.N+1] = C.AGENT[agent].ID
 
 	for spin := 0; spin < C.N; spin++ {
 
@@ -287,7 +288,7 @@ func MatchConfiguration(fullstate []byte) (bool,byte) {
 
 func Rotate(state []byte) []byte {
 
-	var newstate = make([]byte,C.N+1)
+	var newstate = make([]byte,C.N+2)
 
 	for i := 1; i <= C.N; i++ {
 
@@ -295,6 +296,7 @@ func Rotate(state []byte) []byte {
 	}
 
 	newstate[C.N] = state[C.N]
+	newstate[C.N+1] = state[C.N+1]
 	return newstate
 }
 

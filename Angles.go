@@ -86,13 +86,13 @@ func main () {
 	st[56] = "....................................."
 	st[57] = "....................................."
 	st[58] = "....................................."
-	st[59] = "....................................."
+	st[59] = ">>..................................."
 	st[60] = "....................................."
 	st[61] = ">...H................................"
 	st[62] = "...L1R..............................."
 	st[63] = "....2................................"
 	st[64] = "....3................................"
-	st[65] = "....4................................"
+	st[65] = ">...4................................"
 	st[66] = "....T................................"
 	st[67] = "....................................."
 	st[68] = "....................................."
@@ -118,19 +118,21 @@ func InitTransitionMatrix() {
 	// If there is a fifth element, then it's a conditional prior
 	// else it's a wildcard null entry
 
-	// First shift forward phase
+	const angle = 30
+
+	// Common: First shift forward phase
 
 	S_TRANSITION_MATRIX["LH.."]  = 'l'
 	S_TRANSITION_MATRIX["HR.."]  = 'r'
 
-	S_TRANSITION_MATRIX["R2.."] = 'R'
-	S_TRANSITION_MATRIX["2L.."] = 'L'
+	S_TRANSITION_MATRIX["R2..|."] = 'R'
+	S_TRANSITION_MATRIX["2L..|."] = 'L'
 
-	S_TRANSITION_MATRIX["R3.."] = 'R'
-	S_TRANSITION_MATRIX["3L.."] = 'L'
+	S_TRANSITION_MATRIX["R3..|."] = 'R'
+	S_TRANSITION_MATRIX["3L..|."] = 'L'
 
-	S_TRANSITION_MATRIX["R4.."] = 'R'
-	S_TRANSITION_MATRIX["4L.."] = 'L'
+	S_TRANSITION_MATRIX["R4..|."] = 'R'
+	S_TRANSITION_MATRIX["4L..|."] = 'L'
 
 	S_TRANSITION_MATRIX["H...|."] = 'h'
 
@@ -163,39 +165,126 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX[".1W.|r"] = 'W'
 	S_TRANSITION_MATRIX["hW.."] = 'w'
 
-	// ** 2 **
-	// relabel head
-	S_TRANSITION_MATRIX["e1w."]  = '^'
+	// INSERT HERE TO continue another cycle in vertical direction
 
-	// Shart shifting spine right
+	switch angle {
 
-	S_TRANSITION_MATRIX["^W..|w"] = 'F'
+	case 45:
+		// ** 2 **
 
-	S_TRANSITION_MATRIX["F1W."]  = '1'
-	S_TRANSITION_MATRIX["12W."]  = '2'
-	S_TRANSITION_MATRIX["23W."]  = '3'
-	S_TRANSITION_MATRIX["34W."]  = '4'
-	S_TRANSITION_MATRIX["4T..|W"]  = 'T'
+		S_TRANSITION_MATRIX["e1w."]  = '^'
+		
+		// Shart shifting spine right
+		
+		S_TRANSITION_MATRIX["^W..|w"] = 'F'
+		
+		S_TRANSITION_MATRIX["F1W."]  = '1'
+		S_TRANSITION_MATRIX["12W."]  = '2'
+		S_TRANSITION_MATRIX["23W."]  = '3'
+		S_TRANSITION_MATRIX["34W."]  = '4'
+		S_TRANSITION_MATRIX["4T..|W"]  = 'T'
+		
+		S_TRANSITION_MATRIX["^E21"]  = '.'
+		S_TRANSITION_MATRIX[".E32"]  = '.'
+		S_TRANSITION_MATRIX[".E43"]  = '.'
+		S_TRANSITION_MATRIX[".ET4"]  = '.'
+		S_TRANSITION_MATRIX["E.T.|T"]  = '.'
+		
+		S_TRANSITION_MATRIX["E..."]  = '.'
+		S_TRANSITION_MATRIX["....|E"]  = '.'
+		S_TRANSITION_MATRIX["E^..|e"]  = '.'
+		
+		S_TRANSITION_MATRIX["F..."]  = '/'
+		S_TRANSITION_MATRIX["1/..|."]  = 'L'
+		S_TRANSITION_MATRIX["/1..|."]  = 'R'
+		
+		S_TRANSITION_MATRIX["/l1r|F"]  = 'H'
+		S_TRANSITION_MATRIX["LF.."]  = 'l'
+		S_TRANSITION_MATRIX["FR.."]  = 'r'
+		
+		S_TRANSITION_MATRIX["H...|/"]  = '.'
 
-	S_TRANSITION_MATRIX["^E21"]  = '.'
-	S_TRANSITION_MATRIX[".E32"]  = '.'
-	S_TRANSITION_MATRIX[".E43"]  = '.'
-	S_TRANSITION_MATRIX[".ET4"]  = '.'
-	S_TRANSITION_MATRIX["E.T.|T"]  = '.'
+	case 30:
 
-	S_TRANSITION_MATRIX["E..."]  = '.'
-	S_TRANSITION_MATRIX["....|E"]  = '.'
-	S_TRANSITION_MATRIX["E^..|e"]  = '.'
 
-	S_TRANSITION_MATRIX["F..."]  = '/'
-	S_TRANSITION_MATRIX["1/..|."]  = 'L'
-	S_TRANSITION_MATRIX["/1..|."]  = 'R'
+		// This remainder is the same as above with relabellings
 
-	S_TRANSITION_MATRIX["/l1r|F"]  = 'H'
-	S_TRANSITION_MATRIX["LF.."]  = 'l'
-	S_TRANSITION_MATRIX["FR.."]  = 'r'
+		S_TRANSITION_MATRIX["h...|."]  = '#'
 
-	S_TRANSITION_MATRIX["H...|/"]  = '.'
+		// 
+
+		S_TRANSITION_MATRIX["#e1w|h"] = '1'
+		S_TRANSITION_MATRIX["1E2W|1"] = '2'
+		S_TRANSITION_MATRIX["2E3W|2"] = '3'
+		S_TRANSITION_MATRIX["3E4W|3"] = '4'
+		S_TRANSITION_MATRIX["4ETW|4"] = 'T'
+
+		S_TRANSITION_MATRIX["TE..|E"] = '('
+		S_TRANSITION_MATRIX["WT..|W"] = ')'
+
+		S_TRANSITION_MATRIX[")T(.|T"] = '.'
+
+		S_TRANSITION_MATRIX["E...|("] = '.'
+		S_TRANSITION_MATRIX["W...|)"] = '.'
+
+		S_TRANSITION_MATRIX["e#..|."] = '<'
+		S_TRANSITION_MATRIX["#w..|."] = '>'
+
+		S_TRANSITION_MATRIX["E1<."] = '('
+		S_TRANSITION_MATRIX[">1W."] = ')'
+
+		S_TRANSITION_MATRIX["E2(."] = '('
+		S_TRANSITION_MATRIX[")2W."] = ')'
+
+		// intermediate states x,y to cancel an apparent bug in golang maps ??
+
+		S_TRANSITION_MATRIX["E3(."] = 'x'
+		S_TRANSITION_MATRIX[")3W."] = 'x'
+
+		S_TRANSITION_MATRIX["(4x.|E"] = 'y'
+		S_TRANSITION_MATRIX["x4).|W"] = 'y'
+
+		S_TRANSITION_MATRIX["(4x.|y"] = '('
+		S_TRANSITION_MATRIX["x4).|y"] = ')'
+
+		S_TRANSITION_MATRIX["(3(.|x"] = '('
+		S_TRANSITION_MATRIX[")3).|x"] = ')'
+
+		// as for 45, relabelled
+
+		S_TRANSITION_MATRIX["<1>."]  = ':'
+		
+		// Shart shifting spine right
+		
+		S_TRANSITION_MATRIX[":)..|>"] = 'G'
+		
+		S_TRANSITION_MATRIX["G1)."]  = '1'
+		S_TRANSITION_MATRIX["12)."]  = '2'
+		S_TRANSITION_MATRIX["23)."]  = '3'
+		S_TRANSITION_MATRIX["34)."]  = '4'
+		S_TRANSITION_MATRIX["4T..|)"]  = 'T'
+
+		S_TRANSITION_MATRIX[":(21"]  = '.'
+		S_TRANSITION_MATRIX[".(32"]  = '.'
+		S_TRANSITION_MATRIX[".(43"]  = '.'
+		S_TRANSITION_MATRIX[".(T4"]  = '.'
+		S_TRANSITION_MATRIX["(.T.|T"]  = '.'
+		
+		S_TRANSITION_MATRIX["(..."]  = '.'
+		S_TRANSITION_MATRIX["....|("]  = '.'
+		S_TRANSITION_MATRIX["(:..|<"]  = '.'
+		
+		S_TRANSITION_MATRIX["G..."]  = '='
+		S_TRANSITION_MATRIX["1=..|."]  = 'L'
+		S_TRANSITION_MATRIX["=1..|."]  = 'R'
+		
+		S_TRANSITION_MATRIX["=l1r|G"]  = 'H'
+		S_TRANSITION_MATRIX["LG.."]  = 'l'
+		S_TRANSITION_MATRIX["GR.."]  = 'r'
+		
+		S_TRANSITION_MATRIX["H...|="]  = '.'
+
+	}
 }
 
 // ****************************************************************

@@ -2,7 +2,8 @@
 //
 // Cellular automaton version of diagonal motion at arbitrary angles
 // on the lattice. It requires agents ot be able to count for themselves
-// by their internal state machines
+// by their internal state machines. This is a minimal size particle
+// choose 30 or 45 degrees. Each relative XY shift needs a new transition state set.
 //
 ///////////////////////////////////////////////////////////////
 

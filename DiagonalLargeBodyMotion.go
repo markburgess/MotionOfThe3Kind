@@ -2,7 +2,9 @@
 //
 // Cellular automaton version of diagonal motion at arbitrary angles
 // on the lattice. It requires agents ot be able to count for themselves
-// by their internal state machines
+// by their internal state machines. This version is an extended body.
+// The transitions mysteriously don't work for the 30 degree case which
+// has an extra transition. I don't understand this apparent race condition.
 //
 ///////////////////////////////////////////////////////////////
 

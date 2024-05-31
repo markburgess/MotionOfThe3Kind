@@ -122,8 +122,11 @@ func InitTransitionMatrix() {
 
 	// Common: First shift forward phase
 
-	S_TRANSITION_MATRIX["LH.."]  = 'l'
-	S_TRANSITION_MATRIX["HR.."]  = 'r'
+	S_TRANSITION_MATRIX["LH..|."]  = 'l'
+	S_TRANSITION_MATRIX["HR..|."]  = 'r'
+
+	S_TRANSITION_MATRIX["LH#.|."]  = 'l'
+	S_TRANSITION_MATRIX["#HR.|."]  = 'r'
 
 	S_TRANSITION_MATRIX["R2..|."] = 'R'
 	S_TRANSITION_MATRIX["2L..|."] = 'L'
@@ -166,6 +169,9 @@ func InitTransitionMatrix() {
 	S_TRANSITION_MATRIX["hW.."] = 'w'
 
 	// INSERT HERE TO continue another cycle in vertical direction
+
+	S_TRANSITION_MATRIX["#1W.|r"] = 'W' // fix a race condition
+	S_TRANSITION_MATRIX["E1#.|l"] = 'E' // fix a race condition
 
 	switch angle {
 
@@ -211,7 +217,7 @@ func InitTransitionMatrix() {
 
 		S_TRANSITION_MATRIX["h...|."]  = '#'
 
-		// 
+		// Shift up
 
 		S_TRANSITION_MATRIX["#e1w|h"] = '1'
 		S_TRANSITION_MATRIX["1E2W|1"] = '2'
@@ -219,9 +225,9 @@ func InitTransitionMatrix() {
 		S_TRANSITION_MATRIX["3E4W|3"] = '4'
 		S_TRANSITION_MATRIX["4ETW|4"] = 'T'
 
+
 		S_TRANSITION_MATRIX["TE..|E"] = '('
 		S_TRANSITION_MATRIX["WT..|W"] = ')'
-
 		S_TRANSITION_MATRIX[")T(.|T"] = '.'
 
 		S_TRANSITION_MATRIX["E...|("] = '.'
@@ -236,7 +242,7 @@ func InitTransitionMatrix() {
 		S_TRANSITION_MATRIX["E2(."] = '('
 		S_TRANSITION_MATRIX[")2W."] = ')'
 
-		// intermediate states x,y to cancel an apparent bug in golang maps ??
+		// intermediate states x,y to cancel an apparent bug in golang maps ?? **
 
 		S_TRANSITION_MATRIX["E3(."] = 'x'
 		S_TRANSITION_MATRIX[")3W."] = 'x'
@@ -257,34 +263,37 @@ func InitTransitionMatrix() {
 		// Shart shifting spine right
 		
 		S_TRANSITION_MATRIX[":)..|>"] = 'G'
-		
-		S_TRANSITION_MATRIX["G1)."]  = '1'
-		S_TRANSITION_MATRIX["12)."]  = '2'
-		S_TRANSITION_MATRIX["23)."]  = '3'
-		S_TRANSITION_MATRIX["34)."]  = '4'
-		S_TRANSITION_MATRIX["4T..|)"]  = 'T'
+
+		S_TRANSITION_MATRIX["G1).|)"]  = '1'
+		S_TRANSITION_MATRIX["12).|)"]  = '2'
+		S_TRANSITION_MATRIX["23).|)"]  = '3'
+		S_TRANSITION_MATRIX["34).|)"]  = '4'
+		S_TRANSITION_MATRIX["34T.|)"]  = '4'
+		S_TRANSITION_MATRIX[")T..|)"]  = 'T'
 
 		S_TRANSITION_MATRIX[":(21"]  = '.'
 		S_TRANSITION_MATRIX[".(32"]  = '.'
 		S_TRANSITION_MATRIX[".(43"]  = '.'
-		S_TRANSITION_MATRIX[".(T4"]  = '.'
-		S_TRANSITION_MATRIX["(.T.|T"]  = '.'
-		
+		S_TRANSITION_MATRIX["4(.T|T"]  = '.'  // careful of races, like ** above
+		S_TRANSITION_MATRIX[".(.4|4"]  = '.'
+
 		S_TRANSITION_MATRIX["(..."]  = '.'
-		S_TRANSITION_MATRIX["....|("]  = '.'
 		S_TRANSITION_MATRIX["(:..|<"]  = '.'
-		
+		S_TRANSITION_MATRIX["....|("]  = '.'
+
+		// Now return to original state
+
 		S_TRANSITION_MATRIX["G..."]  = '='
 		S_TRANSITION_MATRIX["1=..|."]  = 'L'
-		S_TRANSITION_MATRIX["=1..|."]  = 'R'
-		
-		S_TRANSITION_MATRIX["=l1r|G"]  = 'H'
+		S_TRANSITION_MATRIX["=1..|."]  = 'R'		
 		S_TRANSITION_MATRIX["LG.."]  = 'l'
 		S_TRANSITION_MATRIX["GR.."]  = 'r'
-		
+
+		S_TRANSITION_MATRIX["=l1r|G"]  = 'H'
 		S_TRANSITION_MATRIX["H...|="]  = '.'
 
 	}
+
 }
 
 // ****************************************************************

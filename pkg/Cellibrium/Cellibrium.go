@@ -34,13 +34,14 @@ type STAgent struct {
 	Theta    float64    // my phase
 	MassID   float64    // my mass
 	ID       byte       // my semantic label
+	Moment   int        // direction of mass process
 
 	// Neighbour cache
 
 	Neigh    [N]int      // channel
 	V        [N]float64  // psi
 	M        [N]float64  // mass
-	P        [N]float64  // momentum
+	P        [N]int      // momentum
 	NeighID  [N]byte     // semantic label
 
 	// Conservation equipment
@@ -77,6 +78,7 @@ type Message struct {
 	Value    float64
 	Angle    float64
 	MassID   float64
+	Moment   int
 
 	Phase    int      // proto phase
 }

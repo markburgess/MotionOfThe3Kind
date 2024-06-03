@@ -136,6 +136,8 @@ func UpdateAgent_Flow(agent int) {
 	for direction := 0; direction < C.N; direction++ {
 
 		neighbour := C.AGENT[agent].Neigh[direction]
+
+		C.AGENT[agent].P[direction] = -1
 		
 		if neighbour != 0 {
 			var breaker C.Message
@@ -146,10 +148,9 @@ func UpdateAgent_Flow(agent int) {
 	}
 
 	const PsiQuant = 1
+	C.AGENT[agent].Moment = -1
 
 	C.CausalIndependence(true)
-
-	var pending_accept_offer[C.N] float64
 
 	for t := 0; t < C.MAXTIME; t++ {
 		
@@ -158,11 +159,11 @@ func UpdateAgent_Flow(agent int) {
 
 		for d := 0; d < C.N; d++ {
 
-			//dbar := (d + C.N/2) % C.N
-			
 			var send,recv C.Message
 			
 			neighbour := C.AGENT[agent].Neigh[d]
+
+			dbar := (d + C.N/2) % C.N
 			
 			if neighbour == 0 {
 				continue // wall signal
@@ -180,19 +181,22 @@ func UpdateAgent_Flow(agent int) {
 
 				C.AGENT[agent].V[d] = recv.Value  // the value here is psi
 				C.AGENT[agent].M[d] = recv.MassID
+				C.AGENT[agent].P[d] = recv.Moment
+
 				C.AGENT[agent] = EvolveAgents(C.AGENT[agent],d)
 
-				// In this phase we can choose to make an offer to offload
-				// a neighbour's mass, we have to have received an update first
+				// In this phase we can choose to make an offer to accept
+				// a neighbouring massID, we have to have received an update first
 
-				if pending_accept_offer[d] > 0 {
+				if AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
 					send.Phase = C.TAKE
-					send.Value = pending_accept_offer[d]
-
+					send.Value = 1
 					C.AGENT[agent].Offer[d] = send.Value
+					C.AGENT[agent].Moment = dbar
 					C.ConditionalChannelOffer(agent,neighbour,send)
 				} else {
 					send.MassID = C.AGENT[agent].MassID
+					send.Moment = C.AGENT[agent].Moment
 					send.Value = C.AGENT[agent].Psi
 					send.Angle = C.AGENT[agent].Theta
 					send.Phase = C.TICK
@@ -203,72 +207,30 @@ func UpdateAgent_Flow(agent int) {
 
 			case C.TAKE: // YOU
 				transfer_offer := recv.Value  // This is massID now
-
-				if WillingToPassToRecipient() {
-					send.Value = transfer_offer
-					C.AGENT[agent].Accept[d] = transfer_offer 
-					C.AGENT[agent].MassID -= C.AGENT[agent].Accept[d]
-					send.Phase = C.TACK
-					C.ConditionalChannelOffer(agent,neighbour,send)
-				} else {
-					send.Phase = C.TICK                              // if not accepting, ignore
-					send.Value = C.AGENT[agent].Psi                  // nothing reserved yet, so ok
-					send.MassID = C.AGENT[agent].MassID
-					send.Angle = C.AGENT[agent].Theta
-
-					C.ConditionalChannelOffer(agent,neighbour,send)
-				}
+				send.Value = transfer_offer
+				send.Phase = C.TACK
+				C.ConditionalChannelOffer(agent,neighbour,send)
 				continue
 
-			case C.TACK: // ME, we are receiving a confirmation of our offer in .Offer
-				   // (thank's for offer, I have reserved the amount now.. )
-                                   // The actual amount you reserved to send me was
+			case C.TACK: // ME
 
 				transfer_offer := recv.Value
-
-				if C.AGENT[agent].Offer[d] == transfer_offer {
-					C.AGENT[agent].MassID += transfer_offer
-					C.AGENT[agent].Accept[d] = transfer_offer
-					send.Value = transfer_offer
-				} else {
-					// That's not what I agreed to
-					send.Value = C.NOTACCEPT
-				}
-
-				C.AGENT[agent].Offer[d] = 0
-
+				C.AGENT[agent].MassID = transfer_offer
+				send.Value = transfer_offer
 				send.Phase = C.TOCK
 				C.ConditionalChannelOffer(agent,neighbour,send)
 				continue
 				
 			case C.TOCK: // YOU - initiate a change / Xfer
 
-				if recv.Value == C.NOTACCEPT {                                // my acceptance was refused
-					// We're trusting the other side won't credit
-					C.AGENT[agent].MassID += C.AGENT[agent].Accept[d]  // restore the reserved
-					send.MassID = C.AGENT[agent].MassID
-					send.Value = C.AGENT[agent].Psi
-					send.Angle = C.AGENT[agent].Theta
-
-				}
-
-				C.AGENT[agent].Accept[d] = 0  // clear reservation, consider sent
-				C.AGENT[agent].Offer[d] = 0
-				
+				C.AGENT[agent].MassID = 0
+				send.MassID = C.AGENT[agent].MassID
+				send.Value = C.AGENT[agent].Psi
+				send.Moment = C.AGENT[agent].Moment
+				send.Angle = C.AGENT[agent].Theta
 				send.Phase = C.TICK
 				C.ConditionalChannelOffer(agent,neighbour,send)
 				continue
-			}
-		}
-
-		// Now that all the directional information has been updated fairly,
-		// we decide if/when to accept the movement of a mass unit
-
-		for d := 0; d < C.N; d++ {
-			dbar := (d + C.N/2) % C.N
-			pending_accept_offer[d] = AcceptingMass(C.AGENT[agent],d,dbar)
-			if pending_accept_offer[d] > 0 {
-				break // we can only take one
 			}
 		}
 	}
@@ -276,7 +238,7 @@ func UpdateAgent_Flow(agent int) {
 
 // ****************************************************************
 
-func AcceptingMass(agent C.STAgent,d,dbar int) float64 {
+func AcceptingMass(agent C.STAgent,d,dbar int) int {
 	
 	// We look to accept some mass from d if dbar looks empty
 
@@ -284,27 +246,26 @@ func AcceptingMass(agent C.STAgent,d,dbar int) float64 {
 		return 0
 	}
 
-	// Without a sense of direction for each subagent, the mass will just
-	// dissipate to the edge of the psi field without particle coherence
+	// select the direction of motion
 
-	if (agent.M[d] > agent.MassID) {
-
-		// if affinity gradient falling off ahead (dbar direction), then pull from rear
-
-		if (agent.Psi * agent.Psi - agent.V[dbar] * agent.V[dbar]) > 0 {
-
-			return 1
-		}
-
+	if (agent.M[d] > 0) && (agent.M[dbar] == 0) && (dbar == C.EAST) {
+		return 1
 	}
+
 	return 0
 }
 
 // ****************************************************************
 
-func WillingToPassToRecipient() bool {
+func WillingToPassToRecipient(agent,d int) bool {
 
-	return true
+	dbar := (d + C.N/2) % C.N
+
+	if C.AGENT[agent].MassID > 0 && C.AGENT[agent].Moment == dbar {
+		return true
+	}
+
+	return false
 }
 
 // ****************************************************************

@@ -29,16 +29,22 @@ var MODEL_NAME string
 
 type STAgent struct {
 
-	Psi      float64
-	PsiDot   float64
-	Theta    float64
-	ID       byte
+	Psi      float64    // my amplitude
+	PsiDot   float64    // my velocity
+	Theta    float64    // my phase
+	MassID   float64    // my mass
+	ID       byte       // my semantic label
 
-	Neigh    [N]int
-	V        [N]float64 
-	NeighID  [N]byte
+	// Neighbour cache
+
+	Neigh    [N]int      // channel
+	V        [N]float64  // psi
+	M        [N]float64  // mass
+	P        [N]float64  // momentum
+	NeighID  [N]byte     // semantic label
 
 	// Conservation equipment
+
 	Offer  [N]float64
 	Accept [N]float64
 	Xfer int
@@ -70,9 +76,9 @@ type Message struct {
 
 	Value    float64
 	Angle    float64
-	Momentum float64
+	MassID   float64
 
-	Phase   int      // proto phase
+	Phase    int      // proto phase
 }
 
 // **********************************************************
@@ -125,6 +131,8 @@ func Initialize(st_rows [Ylim]string, DoF float64) {
 
 			case '.': InitAgentGeomAndAdj(x,y,0) 
 
+			case 'm': InitAgentMassGeomAndAdj(x,y,DoF/2) 
+
 			case '>': InitAgentGeomAndAdj(x,y,DoF)
 
 			case '<': if DOUBLE_SLIT {
@@ -140,6 +148,16 @@ func Initialize(st_rows [Ylim]string, DoF float64) {
 			}
 		}
 	}
+}
+
+//***********************************************************
+
+func InitAgentMassGeomAndAdj(x,y int,amplitude float64) {
+
+	agent := COORDS[x][y]
+	AGENT[agent].MassID = 1
+
+	InitAgentGeomAndAdj(x,y,0) 
 }
 
 //***********************************************************
@@ -254,6 +272,7 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 		
 		fmt.Printf("\x1b[2J") // CLS
 		count := 0.0
+		mass_count := 0.0
 		
 		for y := 0; y < ylim; y++ {
 			
@@ -262,6 +281,14 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 				if !Blocked(st_rows,x,y) {
 
 					var IsScreen = xlim - 1
+
+					mass := AGENT[COORDS[x][y]].MassID
+
+					if mass > 0 {
+						fmt.Printf(fieldwidth,"M")
+						mass_count += mass
+						continue
+					}
 
 					observable := AGENT[COORDS[x][y]].Psi
 
@@ -307,7 +334,7 @@ func ShowState(st_rows [Ylim]string,tmax,xlim,ylim int,mode string) {
 			fmt.Println("")
 		}
 
-		fmt.Println("TOTAL =",count)
+		fmt.Println("TOTAL =",count, "MASS=", mass_count)
 		SaveScreenPattern("state",screen)
 
 		const noflicker = 10

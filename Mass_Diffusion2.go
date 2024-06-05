@@ -5,7 +5,7 @@
 // subagent, the mass simple drifts to the edges of the wave and
 // loses coherence, even if we break the psi symmetry relative to M
 //
-// This initial condition is unstable
+// This initial condition is unstable as there is no clear unique directional gradient
 //
 ///////////////////////////////////////////////////////////////
 

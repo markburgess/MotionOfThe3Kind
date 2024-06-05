@@ -6,6 +6,7 @@
 // loses coherence, even if we break the psi symmetry relative to M
 //
 // This initial condition is far enough from the wave to be stable
+// as long as each cell doesn't overselect several directions instead of one
 //
 ///////////////////////////////////////////////////////////////
 

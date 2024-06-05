@@ -5,7 +5,7 @@
 // subagent, the mass simple drifts to the edges of the wave and
 // loses coherence, even if we break the psi symmetry relative to M
 //
-// This version, with two slits for psi
+// This version, with two slits for psi and delayed start ...
 ///////////////////////////////////////////////////////////////
 
 package main
@@ -151,7 +151,7 @@ func UpdateAgent_Flow(agent int) {
 	// Set the boundary condition
 
 	const PsiQuant = 1
-	C.AGENT[agent].Moment = -1 // C.EAST
+	C.AGENT[agent].Moment = C.EAST
 
 	C.CausalIndependence(true)
 
@@ -191,20 +191,25 @@ func UpdateAgent_Flow(agent int) {
 				// In this phase we can choose to make an offer to accept
 				// a neighbouring massID, we have to have received an update first
 
-				if AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
-					send.Phase = C.TAKE
-					send.Value = 1
-					C.AGENT[agent].Offer[d] = send.Value
-					C.AGENT[agent].Moment = dbar
-					C.ConditionalChannelOffer(agent,neighbour,send)
-				} else {
-					send.MassID = C.AGENT[agent].MassID
-					send.Moment = C.AGENT[agent].Moment
-					send.Value = C.AGENT[agent].Psi
-					send.Angle = C.AGENT[agent].Theta
-					send.Phase = C.TICK
-					C.ConditionalChannelOffer(agent,neighbour,send)
+				const starting_time = 800
+
+				if t > starting_time { // wait for the wave to equilibrate somewhat
+
+					if AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
+						send.Phase = C.TAKE
+						send.Value = 1
+						C.AGENT[agent].Offer[d] = send.Value
+						C.AGENT[agent].Moment = dbar
+						C.ConditionalChannelOffer(agent,neighbour,send)
+						continue
+					}
 				}
+				send.MassID = C.AGENT[agent].MassID
+				send.Moment = C.AGENT[agent].Moment
+				send.Value = C.AGENT[agent].Psi
+				send.Angle = C.AGENT[agent].Theta
+				send.Phase = C.TICK
+				C.ConditionalChannelOffer(agent,neighbour,send)
 
 				continue
 
@@ -251,21 +256,32 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 	}
 
 	// find max gradient behind us
-	var max float64 = 0
+	var min,max float64 = 99,0
 	var dbarmax int
 
 	for d := 0; d < C.N; d++ {
 
-		affinity := agent.V[d] * agent.V[d]
 		dbar := (d + C.N/2) % C.N
+
+		affinity := agent.V[d] * agent.V[d]
 
 		if affinity > max {
 			max = affinity
 			dbarmax = dbar
 		}
+
+		if affinity < min {
+			min = affinity
+		}
 	}
 
-	agent.Moment = dbarmax
+	const threshold = 20.0   // should really express in dimensionless vars..?
+
+	if max - min > threshold {
+		agent.Moment = dbarmax
+	} else {
+		agent.Moment = C.EAST
+	}
 
 	// select the direction of motion - conservation of initial momentum
 

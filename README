@@ -75,6 +75,11 @@ There are different models of virtual propagation for waves and particles
                             directions separately preserves these directions, but can't
                             describe combined X,Y motion
 
+11. Mass_Diffusion.go - combination of a diffusion process with conservation for tokens M
+                        conditional on a psi wave being non-zero. The directions of momentum
+                        is predecided and does not change. The momentum process is "serviced"
+                        by energy from the psi wave
+
 -----------------------
 
 To plot the screen graphs, use gnuplot, e.g.

@@ -75,7 +75,17 @@ There are different models of virtual propagation for waves and particles
                             directions separately preserves these directions, but can't
                             describe combined X,Y motion
 
-11. Mass_Diffusion.go - combination of a diffusion process with conservation for tokens M
+11. Replicator.go - cellular cloning of state, like reading DNA/RNA from strings as a basis
+                    for molecular motors as finite state machines running on SST
+
+12. DiagonalLargeBodyMotion.go - applying the cloning state machine mechanism to the motion of
+                                 directionally enoded body. Each new direction is a different state
+                                  machine. This seems buggy, not sure why (golang hash bug?).
+
+13. DiagonalMinimalBodyMotion.go - using a minimal size body with sufficient structure to
+                                   enable virtual motion as several angles. Also seems buggy (golang hash bug?).
+
+14. Mass_Diffusion.go - combination of a diffusion process with conservation for tokens M
                         conditional on a psi wave being non-zero. The directions of momentum
                         is predecided and does not change. The momentum process is "serviced"
                         by energy from the psi wave

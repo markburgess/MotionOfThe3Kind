@@ -1,12 +1,7 @@
 ///////////////////////////////////////////////////////////////
 //
 // Can we maintain particle cluster coherence with a centre of mass
-// guided by a psi wave? Without a directional affinity for each
-// subagent, the mass simple drifts to the edges of the wave and
-// loses coherence, even if we break the psi symmetry relative to M
-//
-// This initial condition is far enough from the wave to be stable
-// as long as each cell doesn't overselect several directions instead of one
+// guided by a psi wave?
 //
 ///////////////////////////////////////////////////////////////
 
@@ -140,7 +135,7 @@ func UpdateAgent_Flow(agent int) {
 
 		neighbour := C.AGENT[agent].Neigh[direction]
 
-		C.AGENT[agent].P[direction] = -1
+		C.AGENT[agent].P[direction] = C.EAST
 		
 		if neighbour != 0 {
 			var breaker C.Message
@@ -151,7 +146,7 @@ func UpdateAgent_Flow(agent int) {
 	}
 
 	const PsiQuant = 1
-	C.AGENT[agent].Moment = -1
+	C.AGENT[agent].Moment = C.EAST
 
 	C.CausalIndependence(true)
 
@@ -160,13 +155,14 @@ func UpdateAgent_Flow(agent int) {
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
 		// Messages persist until they are read and cannot unseen
 
-		for d := 0; d < C.N; d++ {
+		for direction := C.AGENT[agent].Moment; direction < (C.AGENT[agent].Moment + C.N); direction++ {
 
 			var send,recv C.Message
 			
+			d := direction % C.N
+			dbar := (direction + C.N/2) % C.N
+			
 			neighbour := C.AGENT[agent].Neigh[d]
-
-			dbar := (d + C.N/2) % C.N
 			
 			if neighbour == 0 {
 				continue // wall signal
@@ -250,28 +246,15 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 		return 0
 	}
 
-	// find max gradient behind us
-	var max float64 = 0
-	var dbarmax int
+	affinity := agent.V[d] * agent.V[d] - agent.Psi * agent.Psi
 
-	for d := 0; d < C.N; d++ {
+	const threshold = 20.0   // should really express in dimensionless vars..?
 
-		affinity := agent.V[d] * agent.V[d]
-		dbar := (d + C.N/2) % C.N
+	if affinity > threshold {
 
-		if affinity > max {
-			max = affinity
-			dbarmax = dbar
+		if (agent.M[d] > 0) && (agent.MassID == 0) && (dbar == agent.Moment) {
+			return 1
 		}
-	}
-
-	// If the bow wave is focussed too close to the mass, it will diffuse the mass
-	agent.Moment = dbarmax
-
-	// select the direction of motion - conservation of initial momentum
-
-	if (agent.M[d] > 0) && (agent.MassID == 0) && (dbar == agent.Moment) {
-		return 1
 	}
 
 	return 0

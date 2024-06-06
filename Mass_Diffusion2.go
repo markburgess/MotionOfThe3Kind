@@ -5,14 +5,15 @@
 // subagent, the mass simple drifts to the edges of the wave and
 // loses coherence, even if we break the psi symmetry relative to M
 //
-// This initial condition is unstable as there is no clear unique directional gradient
+// This initial condition is crucial in determining direction
+// as the directional gradient is x,y symmetrical
 //
 ///////////////////////////////////////////////////////////////
 
 package main
 
 import (
-//	"fmt"
+	"fmt"
 	C "Cellibrium"
 )
 
@@ -74,14 +75,14 @@ func main () {
 	st[41] = "....................................|"
 	st[42] = "....................................|"
 	st[43] = "....................................|"
-	st[44] = ".....m..............................|"
-	st[45] = "....mmm.............................|"
-	st[46] = ">..mmmmm ...........................|"
-	st[47] = ">.mmmmmmm...........................|"
-	st[48] = ">.mmmmmmm...........................|"
-	st[49] = ">..mmmmm............................|"
-	st[50] = "....mmm.............................|"
-	st[51] = ".....m..............................|"
+	st[44] = ".....m.............................*|"
+	st[45] = "....mmm............................*|"
+	st[46] = ">..mmmmm ..........................*|"
+	st[47] = ">.mmmmmmm..........................*|"
+	st[48] = ">.mmmmmmm..........................*|"
+	st[49] = ">..mmmmm...........................*|"
+	st[50] = "....mmm............................*|"
+	st[51] = ".....m.............................*|"
 	st[52] = "....................................|"
 	st[53] = "....................................|"
 	st[54] = "....................................|"
@@ -110,13 +111,13 @@ func main () {
 	// Keep the data structures for agents global too for convenience
 
 	C.Initialize(st,DoF)
-
 	C.ShowState(st,1,37,76,"+")
 	EquilGuideRail()
 	C.ShowState(st,C.MAXTIME,37,76,"+")
 	C.ShowAffinity(st,C.MAXTIME,37,76)
 	//go C.MovingPromise()
 	//C.ShowPhase(st,C.MAXTIME,37,76)
+	fmt.Println("")
 }
 
 // ****************************************************************
@@ -139,7 +140,7 @@ func UpdateAgent_Flow(agent int) {
 
 		neighbour := C.AGENT[agent].Neigh[direction]
 
-		C.AGENT[agent].P[direction] = -1
+		C.AGENT[agent].P[direction] = 0
 		
 		if neighbour != 0 {
 			var breaker C.Message
@@ -150,7 +151,7 @@ func UpdateAgent_Flow(agent int) {
 	}
 
 	const PsiQuant = 1
-	C.AGENT[agent].Moment = -1
+	C.AGENT[agent].Moment = C.EAST // if this is random, nothing happens!
 
 	C.CausalIndependence(true)
 
@@ -159,13 +160,14 @@ func UpdateAgent_Flow(agent int) {
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
 		// Messages persist until they are read and cannot unseen
 
-		for d := 0; d < C.N; d++ {
+		for direction := C.AGENT[agent].Moment; direction < (C.AGENT[agent].Moment + C.N); direction++ {
 
 			var send,recv C.Message
+
+			d := direction % C.N
+			dbar := (direction + C.N/2) % C.N
 			
 			neighbour := C.AGENT[agent].Neigh[d]
-
-			dbar := (d + C.N/2) % C.N
 			
 			if neighbour == 0 {
 				continue // wall signal
@@ -191,6 +193,7 @@ func UpdateAgent_Flow(agent int) {
 				// a neighbouring massID, we have to have received an update first
 
 				if AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
+
 					send.Phase = C.TAKE
 					send.Value = 1
 					C.AGENT[agent].Offer[d] = send.Value
@@ -205,15 +208,12 @@ func UpdateAgent_Flow(agent int) {
 					C.ConditionalChannelOffer(agent,neighbour,send)
 				}
 
-				continue
-
 			case C.TAKE: // YOU
 				transfer_offer := recv.Value  // This is massID now
 				send.Value = transfer_offer
 				send.Phase = C.TACK
 				C.AGENT[agent].MassID = 0     // assume you'll take it
 				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
 
 			case C.TACK: // ME
 
@@ -222,7 +222,6 @@ func UpdateAgent_Flow(agent int) {
 				send.Value = transfer_offer
 				send.Phase = C.TOCK
 				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
 				
 			case C.TOCK: // YOU - initiate a change / Xfer
 
@@ -233,7 +232,6 @@ func UpdateAgent_Flow(agent int) {
 				send.Angle = C.AGENT[agent].Theta
 				send.Phase = C.TICK
 				C.ConditionalChannelOffer(agent,neighbour,send)
-				continue
 			}
 		}
 	}
@@ -249,28 +247,17 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 		return 0
 	}
 
-	// find max gradient behind us
-	var max float64 = 0
-	var dbarmax int
+	affinity := agent.V[d] * agent.V[d] - agent.Psi * agent.Psi
 
-	for d := 0; d < C.N; d++ {
+	const psi_threshold = 20.0   // should really express in dimensionless vars..?
 
-		affinity := agent.V[d] * agent.V[d]
-		dbar := (d + C.N/2) % C.N
+	alignment := (dbar - agent.Moment) * (dbar - agent.Moment)
 
-		if affinity > max {
-			max = affinity
-			dbarmax = dbar
+	if affinity > psi_threshold && alignment < 1 {
+
+		if (agent.M[d] > 0) && (agent.MassID == 0) {
+			return 1
 		}
-	}
-
-	// If the bow wave is focussed too close to the mass, it will diffuse the mass
-	agent.Moment = dbarmax
-
-	// select the direction of motion - conservation of initial momentum
-
-	if (agent.M[d] > 0) && (agent.MassID == 0) && (dbar == agent.Moment) {
-		return 1
 	}
 
 	return 0

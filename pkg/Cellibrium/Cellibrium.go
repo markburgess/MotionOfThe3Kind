@@ -639,3 +639,10 @@ func GetRandOffset() int {
 	return R.Intn(WAVELENGTH)
 }
 
+//***********************************************************
+
+func GetRandDirection() int {
+
+	return R.Intn(N)
+}
+

@@ -1,11 +1,9 @@
 ///////////////////////////////////////////////////////////////
 //
 // Can we maintain small particle coherence with a centre of mass
-// guided by a psi wave? Without a directional affinity for each
-// subagent, the mass simple drifts to the edges of the wave and
-// loses coherence, even if we break the psi symmetry relative to M
+// guided by a psi wave?
 //
-// This version, with two slits for psi and delayed start ...
+// This version, with two slits for psi and * delayed start * ...
 ///////////////////////////////////////////////////////////////
 
 package main
@@ -160,14 +158,15 @@ func UpdateAgent_Flow(agent int) {
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
 		// Messages persist until they are read and cannot unseen
 
-		for d := 0; d < C.N; d++ {
+		for direction := C.AGENT[agent].Moment; direction < (C.AGENT[agent].Moment + C.N); direction++ {
 
 			var send,recv C.Message
 			
+			d := direction % C.N
+			dbar := (direction + C.N/2) % C.N
+			
 			neighbour := C.AGENT[agent].Neigh[d]
 
-			dbar := (d + C.N/2) % C.N
-			
 			if neighbour == 0 {
 				continue // wall signal
 			}
@@ -204,6 +203,7 @@ func UpdateAgent_Flow(agent int) {
 						continue
 					}
 				}
+
 				send.MassID = C.AGENT[agent].MassID
 				send.Moment = C.AGENT[agent].Moment
 				send.Value = C.AGENT[agent].Psi
@@ -255,38 +255,15 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 		return 0
 	}
 
-	// find max gradient behind us
-	var min,max float64 = 99,0
-	var dbarmax int
-
-	for d := 0; d < C.N; d++ {
-
-		dbar := (d + C.N/2) % C.N
-
-		affinity := agent.V[d] * agent.V[d]
-
-		if affinity > max {
-			max = affinity
-			dbarmax = dbar
-		}
-
-		if affinity < min {
-			min = affinity
-		}
-	}
+	affinity := agent.V[d] * agent.V[d] - agent.Psi * agent.Psi
 
 	const threshold = 20.0   // should really express in dimensionless vars..?
 
-	if max - min > threshold {
-		agent.Moment = dbarmax
-	} else {
-		agent.Moment = C.EAST
-	}
+	if affinity > threshold {
 
-	// select the direction of motion - conservation of initial momentum
-
-	if (agent.M[d] > 0) && (agent.MassID == 0) && (dbar == agent.Moment) {
-		return 1
+		if (agent.M[d] > 0) && (agent.MassID == 0) && (dbar == agent.Moment) {
+			return 1
+		}
 	}
 
 	return 0

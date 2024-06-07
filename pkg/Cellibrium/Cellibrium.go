@@ -36,13 +36,16 @@ type STAgent struct {
 	ID       byte       // my semantic label
 	Moment   int        // direction of mass process
 
+	Intent   [N]float64  // momentum affinity
+
 	// Neighbour cache
 
-	Neigh    [N]int      // channel
-	V        [N]float64  // psi
-	M        [N]float64  // mass
-	P        [N]int      // momentum
-	NeighID  [N]byte     // semantic label
+	NIntent  [N][N]float64
+	Neigh    [N]int       // channel
+	V        [N]float64   // psi
+	M        [N]float64   // mass
+	P        [N]int       // momentum
+	NeighID  [N]byte      // semantic label
 
 	// Conservation equipment
 
@@ -79,6 +82,7 @@ type Message struct {
 	Angle    float64
 	MassID   float64
 	Moment   int
+	Intent   [N]float64
 
 	Phase    int      // proto phase
 }

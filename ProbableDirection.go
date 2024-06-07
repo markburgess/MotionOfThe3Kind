@@ -4,7 +4,11 @@
 // guided by a psi wave and probabilistic directional affinity?
 
 // This initial condition is crucial in determining direction
-// as the directional gradient is x,y symmetrical
+// as the directional gradient is x,y symmetrical. Even with heavily
+// skewed directions , the mass spreads out along the wave, since it
+// travels quite slowly, depending on the relative speed / acceptance threshold.
+// In this model, there is no centre of mass cohesive "force", so a body can
+// just dissociate freely
 //
 ///////////////////////////////////////////////////////////////
 
@@ -12,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	C "Cellibrium"
 )
 
@@ -43,9 +48,9 @@ func main () {
 	st[11] = "....................................|"
 	st[12] = "....................................|"
 	st[13] = "....................................|"
-	st[14] = "....................................|"
-	st[15] = "....................................|"
-	st[16] = "....................................|"
+	st[14] = "...................................*|"
+	st[15] = "...................................*|"
+	st[16] = "...................................*|"
 	st[17] = "....................................|"
 	st[18] = "....................................|"
 	st[19] = "....................................|"
@@ -70,20 +75,20 @@ func main () {
 	st[38] = "....................................|"
 	st[39] = "....................................|"
 	st[40] = "....................................|"
-	st[41] = "....................................|"
-	st[42] = "....................................|"
-	st[43] = "....................................|"
-	st[44] = ".....m.............................*|"
-	st[45] = "....mmm............................*|"
-	st[46] = ">..mmmmm ..........................*|"
-	st[47] = ">.mmmmmmm..........................*|"
-	st[48] = ">.mmmmmmm..........................*|"
-	st[49] = ">..mmmmm...........................*|"
-	st[50] = "....mmm............................*|"
-	st[51] = ".....m.............................*|"
-	st[52] = "....................................|"
-	st[53] = "....................................|"
-	st[54] = "....................................|"
+	st[41] = ">...................................|"
+	st[42] = ">...................................|"
+	st[43] = ">...................................|"
+	st[44] = ">...................................|"
+	st[45] = ">...................................|"
+	st[46] = ">..mmm. ...........................*|"
+	st[47] = ">..mmm.............................*|"
+	st[48] = ">..mmm.............................*|"
+	st[49] = ">..mmm.............................*|"
+	st[50] = ">...................................|"
+	st[51] = ">...................................|"
+	st[52] = ">...................................|"
+	st[53] = ">...................................|"
+	st[54] = ">...................................|"
 	st[55] = "....................................|"
 	st[56] = "....................................|"
 	st[57] = "....................................|"
@@ -104,7 +109,7 @@ func main () {
 	st[72] = "....................................|"
 	st[73] = "....................................|"
 	st[74] = "....................................|"
-	st[75] = "....................................."
+	st[75] = "...***..............................."
 
 	// Keep the data structures for agents global too for convenience
 
@@ -112,9 +117,8 @@ func main () {
 	C.ShowState(st,1,37,76,"+")
 	EquilGuideRail()
 	C.ShowState(st,C.MAXTIME,37,76,"+")
-	C.ShowAffinity(st,C.MAXTIME,37,76)
-	//go C.MovingPromise()
-	//C.ShowPhase(st,C.MAXTIME,37,76)
+	//ShowMomentum(st,C.MAXTIME,37,76,"+")
+
 	fmt.Println("")
 }
 
@@ -134,6 +138,8 @@ func UpdateAgent_Flow(agent int) {
 
 	// Start with an  unconditional promise to break the deadlock symmetry
 
+	const mass = 1.0
+
 	for direction := 0; direction < C.N; direction++ {
 
 		neighbour := C.AGENT[agent].Neigh[direction]
@@ -143,12 +149,11 @@ func UpdateAgent_Flow(agent int) {
 		if neighbour != 0 {
 			var breaker C.Message
 			breaker.Value = C.AGENT[agent].Psi
+			breaker.Intent = C.AGENT[agent].Intent
 			breaker.Phase = C.TICK
 			C.CHANNEL[agent][neighbour] = breaker
 		}
 	}
-
-	const PsiQuant = 1
 
 	C.CausalIndependence(true)
 
@@ -157,7 +162,7 @@ func UpdateAgent_Flow(agent int) {
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
 		// Messages persist until they are read and cannot unseen
 
-		for direction := C.AGENT[agent].Moment; direction < (C.AGENT[agent].Moment + C.N); direction++ {
+		for direction := 0; direction < C.N ; direction++ {
 
 			var send,recv C.Message
 
@@ -182,7 +187,12 @@ func UpdateAgent_Flow(agent int) {
 
 				C.AGENT[agent].V[d] = recv.Value       // the value here is psi
 				C.AGENT[agent].M[d] = recv.MassID
-				C.AGENT[agent].NIntent[d] = recv.Intent // gossip intent/momentum
+
+				if C.AGENT[agent].M[d] > 0 {
+					// only accept momentum from non-empty cells
+					C.AGENT[agent].Intent = recv.Intent
+				}
+
 				C.AGENT[agent] = EvolveAgents(C.AGENT[agent],d)
 
 				// In this phase we can choose to make an offer to accept
@@ -190,29 +200,26 @@ func UpdateAgent_Flow(agent int) {
 
 				if AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
 					send.Phase = C.TAKE
-					send.Value = 1
-					C.AGENT[agent].Offer[d] = send.Value
+					send.Value = mass
 					C.ConditionalChannelOffer(agent,neighbour,send)
 				} else {
 					send.MassID = C.AGENT[agent].MassID
 					send.Value = C.AGENT[agent].Psi
+					send.Intent = C.AGENT[agent].Intent
 					send.Angle = C.AGENT[agent].Theta
 					send.Phase = C.TICK
 					C.ConditionalChannelOffer(agent,neighbour,send)
 				}
 
 			case C.TAKE: // YOU
-				transfer_offer := recv.Value  // This is massID now
-				send.Value = transfer_offer
 				send.Phase = C.TACK
-				C.AGENT[agent].MassID = 0     // assume you'll take it
+				C.AGENT[agent].MassID = 0     // assume I'll take it
 				C.ConditionalChannelOffer(agent,neighbour,send)
 
 			case C.TACK: // ME
-
-				transfer_offer := recv.Value
-				C.AGENT[agent].MassID = transfer_offer
-				send.Value = transfer_offer
+				// Once we've accepted the momentum, rotate the direction clock
+				C.AGENT[agent].MassID = mass
+				C.AGENT[agent].Intent = C.Rotate(C.AGENT[agent].Intent)
 				send.Phase = C.TOCK
 				C.ConditionalChannelOffer(agent,neighbour,send)
 				
@@ -220,6 +227,7 @@ func UpdateAgent_Flow(agent int) {
 
 				C.AGENT[agent].MassID = 0
 				send.MassID = C.AGENT[agent].MassID
+				send.Intent = C.AGENT[agent].Intent
 				send.Value = C.AGENT[agent].Psi
 				send.Angle = C.AGENT[agent].Theta
 				send.Phase = C.TICK
@@ -243,9 +251,9 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 
 	const psi_threshold = 20.0   // should really express in dimensionless vars..?
 
-	alignment := (dbar - agent.Moment) * (dbar - agent.Moment)
-
-	if affinity > psi_threshold && alignment < 1 {
+	alignment := agent.Intent[0]
+		
+	if affinity > psi_threshold && alignment == dbar {
 
 		if (agent.M[d] > 0) && (agent.MassID == 0) {
 			return 1
@@ -253,19 +261,6 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 	}
 
 	return 0
-}
-
-// ****************************************************************
-
-func WillingToPassToRecipient(agent,d int) bool {
-
-	dbar := (d + C.N/2) % C.N
-
-	if C.AGENT[agent].MassID > 0 && C.AGENT[agent].Moment == dbar {
-		return true
-	}
-
-	return false
 }
 
 // ****************************************************************
@@ -307,4 +302,89 @@ func dPsi(agent C.STAgent) float64 { // Laplacian
 	return deltaPsi
 }
 
+// ****************************************************************
+
+func ShowMomentum(st_rows [C.Ylim]string,tmax,xlim,ylim int,mode string) {
+
+	var fieldwidth,numwidth string
+
+	switch mode {
+	case "+": fieldwidth = fmt.Sprintf("%c%ds",'%',10)
+	default:  fieldwidth = fmt.Sprintf("%c%ds",'%',8)
+		numwidth = fmt.Sprintf("%c%d.1f",'%',8)
+	}
+
+	for t := 1; t < tmax; t++ {
+		
+		fmt.Printf("\x1b[2J") // CLS
+		count := 0.0
+		mass_count := 0.0
+		
+		for y := 0; y < ylim; y++ {
+			
+			for x := 0; x < xlim; x++ {
+				
+				if !C.Blocked(st_rows,x,y) {
+
+					mass := C.AGENT[C.COORDS[x][y]].MassID
+
+					if mass > 0 {
+						fmt.Printf(fieldwidth,Momentum(C.AGENT[C.COORDS[x][y]].Intent))
+						mass_count += mass
+						continue
+					}
+
+					observable := C.AGENT[C.COORDS[x][y]].Psi
+
+					count += observable
+  
+					if observable != 0 {
+
+						if mode == "+" {
+							if observable > 1 {
+								fmt.Printf(fieldwidth,"+")
+							} else if observable < -1 {
+								fmt.Printf(fieldwidth,"-")
+							} else {
+								fmt.Printf(fieldwidth,".")
+							}
+
+						} else {
+							if observable*observable > 1 {
+								fmt.Printf(numwidth,observable)
+							} else {
+								fmt.Printf(fieldwidth,".")
+							}
+						}
+					} else {
+						fmt.Printf(fieldwidth,".")
+					}
+					
+				} else {
+					fmt.Printf(fieldwidth," ")
+				}
+			}
+			
+			fmt.Println("")
+		}
+
+		fmt.Println("TOTAL =",count, "MASS=", mass_count)
+
+		const noflicker = 10
+		time.Sleep(noflicker * time.Duration(50) * time.Millisecond) // random noise
+	}
+}
+
+// ***********************
+
+func Momentum(p [C.MOMENTUMPROCESS]int) string {
+
+	var s string
+
+	for i := 0; i < C.MOMENTUMPROCESS; i++ {
+		s += fmt.Sprintf("%d",p[i])
+	}
+
+	return s
+}
 

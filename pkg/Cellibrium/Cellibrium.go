@@ -20,6 +20,7 @@ const MAXTIME = 100000
 var   DOUBLE_SLIT bool = false
 const WAVECHAR = "uuuu0000dddd0000"
 const WAVELENGTH = len(WAVECHAR)
+const MOMENTUMPROCESS = 8
 var   WAVE [WAVELENGTH]float64
 const N = 4
 
@@ -36,15 +37,14 @@ type STAgent struct {
 	ID       byte       // my semantic label
 	Moment   int        // direction of mass process
 
-	Intent   [N]float64  // momentum affinity
+	Intent   [MOMENTUMPROCESS]int // directional encoding for process wave (program counter)
 
 	// Neighbour cache
 
-	NIntent  [N][N]float64
 	Neigh    [N]int       // channel
 	V        [N]float64   // psi
 	M        [N]float64   // mass
-	P        [N]int       // momentum
+	P        [N]float64   // momentum (cache of Intent[0])
 	NeighID  [N]byte      // semantic label
 
 	// Conservation equipment
@@ -82,8 +82,7 @@ type Message struct {
 	Angle    float64
 	MassID   float64
 	Moment   int
-	Intent   [N]float64
-
+	Intent   [MOMENTUMPROCESS]int
 	Phase    int      // proto phase
 }
 
@@ -161,9 +160,11 @@ func Initialize(st_rows [Ylim]string, DoF float64) {
 func InitAgentMassGeomAndAdj(x,y int,amplitude float64) {
 
 	agent := COORDS[x][y]
-	AGENT[agent].MassID = 1
 
 	InitAgentGeomAndAdj(x,y,0) 
+
+	AGENT[agent].MassID = 1
+	AGENT[agent].Intent = MakeMomentum("SEEEEEEE") 
 }
 
 //***********************************************************
@@ -522,6 +523,44 @@ func MakeWaves(process string) [WAVELENGTH]float64 {
 	return wave
 }
 
+// *************************************************************
+
+func MakeMomentum(process string) [MOMENTUMPROCESS]int {
+
+	var wave [MOMENTUMPROCESS]int
+
+	for pos := 0; pos < MOMENTUMPROCESS; pos++ {
+
+		switch process[pos] {
+			
+		case 'E': wave[pos] = EAST
+
+		case 'N': wave[pos] = NORTH
+
+		case 'S': wave[pos] = SOUTH
+
+		default: wave[pos] = -1
+		}
+	}
+
+	fmt.Println("WAVE",wave)
+	return wave
+}
+
+//***********************************************************
+
+func Rotate(p [MOMENTUMPROCESS]int) [MOMENTUMPROCESS]int {
+
+	var newp [MOMENTUMPROCESS]int
+
+	for pos := 0; pos < MOMENTUMPROCESS; pos++ {
+
+		newp[pos] = p[(pos+1) % MOMENTUMPROCESS]
+	}
+
+	return newp
+}
+
 //***********************************************************
 
 func Cyc(pos int) int {
@@ -650,3 +689,9 @@ func GetRandDirection() int {
 	return R.Intn(N)
 }
 
+//***********************************************************
+
+func GetRandXY(ptotal float64) float64 {
+
+	return R.Float64() * ptotal
+}

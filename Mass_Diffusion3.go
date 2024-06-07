@@ -22,7 +22,7 @@ const PERIOD = C.WAVELENGTH * wrange
 
 func main () {
 
-	C.MODEL_NAME = "LongSourceSlits"
+	C.MODEL_NAME = "MassDiffusion3"
 
 	var st [C.Ylim]string
 

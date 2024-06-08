@@ -136,9 +136,9 @@ func Initialize(st_rows [Ylim]string, DoF float64) {
 
 			case '.': InitAgentGeomAndAdj(x,y,0) 
 
-			case 'm': InitAgentMassGeomAndAdj(x,y,DoF/2,"SEEEEEEE") 
+			case 'm': InitAgentMassGeomAndAdj(x,y,DoF/2,"SSEEEEEE") 
 
-			case 'w': InitAgentMassGeomAndAdj(x,y,DoF/2,"NEEEEEEE") 
+			case 'w': InitAgentMassGeomAndAdj(x,y,DoF/2,"NNEEEEEE") 
 
 			case '>': InitAgentGeomAndAdj(x,y,DoF)
 

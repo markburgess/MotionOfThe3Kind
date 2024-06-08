@@ -44,7 +44,7 @@ type STAgent struct {
 	Neigh    [N]int       // channel
 	V        [N]float64   // psi
 	M        [N]float64   // mass
-	P        [N]float64   // momentum (cache of Intent[0])
+	P        [N]int       // momentum (cache of Intent[0])
 	NeighID  [N]byte      // semantic label
 
 	// Conservation equipment
@@ -136,7 +136,9 @@ func Initialize(st_rows [Ylim]string, DoF float64) {
 
 			case '.': InitAgentGeomAndAdj(x,y,0) 
 
-			case 'm': InitAgentMassGeomAndAdj(x,y,DoF/2) 
+			case 'm': InitAgentMassGeomAndAdj(x,y,DoF/2,"SEEEEEEE") 
+
+			case 'w': InitAgentMassGeomAndAdj(x,y,DoF/2,"NEEEEEEE") 
 
 			case '>': InitAgentGeomAndAdj(x,y,DoF)
 
@@ -157,14 +159,14 @@ func Initialize(st_rows [Ylim]string, DoF float64) {
 
 //***********************************************************
 
-func InitAgentMassGeomAndAdj(x,y int,amplitude float64) {
+func InitAgentMassGeomAndAdj(x,y int,amplitude float64, momentum string) {
 
 	agent := COORDS[x][y]
 
 	InitAgentGeomAndAdj(x,y,0) 
 
 	AGENT[agent].MassID = 1
-	AGENT[agent].Intent = MakeMomentum("SEEEEEEE") 
+	AGENT[agent].Intent = MakeMomentum(momentum) 
 }
 
 //***********************************************************

@@ -85,10 +85,27 @@ There are different models of virtual propagation for waves and particles
 13. DiagonalMinimalBodyMotion.go - using a minimal size body with sufficient structure to
                                    enable virtual motion as several angles. Also seems buggy (golang hash bug?).
 
-14. Mass_Diffusion.go - combination of a diffusion process with conservation for tokens M
+14. Mass_Diffusion.go - combination of a diffusion process with conservation for two bodies composed of tokens M
                         conditional on a psi wave being non-zero. The directions of momentum
                         is predecided and does not change. The momentum process is "serviced"
-                        by energy from the psi wave
+                        by energy from the psi wave. Each M moves independently. Geometry of double slit.
+                        Even Though M is passed carefully, collisions can result in non-deterministic 
+                        non-conservation. There cannot be mutex locking between independent agents.
+
+15.  Mass_Diffusion.go2 - a large composite body, same algorithm, no double slit geometry to explore coherence.
+Small/narrow focused psi source tends to explode the body.
+
+15.  Mass_Diffusion.go3 - same as 2 with wider psi source for greater coherence.
+
+15.  Mass_Diffusion.go4 - double slit geometry with wider source.
+
+15.  ProbableDirection.go - an interior state counter in the virtual process moves with the masses M. The bodies can
+                            move with a momentum/direction determined by an internal "wave" pattern, somewhat like 
+                            the spin Aspect model.  Each is independent, and they are unreliably passed on,
+                            some may be blocked by existing M. The M tend to spread out over the wave front if they
+                            are allowed to move along more than a single axis (angles are XY ratios).
+
+15.  ProbableDirection2.go - double slit geometry, two kinds of mass with different momentum
 
 -----------------------
 

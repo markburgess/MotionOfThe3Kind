@@ -95,17 +95,17 @@ There are different models of virtual propagation for waves and particles
 15.  Mass_Diffusion.go2 - a large composite body, same algorithm, no double slit geometry to explore coherence.
 Small/narrow focused psi source tends to explode the body.
 
-15.  Mass_Diffusion.go3 - same as 2 with wider psi source for greater coherence.
+16.  Mass_Diffusion.go3 - same as 2 with wider psi source for greater coherence.
 
-15.  Mass_Diffusion.go4 - double slit geometry with wider source.
+17.  Mass_Diffusion.go4 - double slit geometry with wider source.
 
-15.  ProbableDirection.go - an interior state counter in the virtual process moves with the masses M. The bodies can
+18.  ProbableDirection.go - an interior state counter in the virtual process moves with the masses M. The bodies can
                             move with a momentum/direction determined by an internal "wave" pattern, somewhat like 
                             the spin Aspect model.  Each is independent, and they are unreliably passed on,
                             some may be blocked by existing M. The M tend to spread out over the wave front if they
                             are allowed to move along more than a single axis (angles are XY ratios).
 
-15.  ProbableDirection2.go - double slit geometry, two kinds of mass with different momentum
+19.  ProbableDirection2.go - double slit geometry, two kinds of mass with different momentum
 
 -----------------------
 

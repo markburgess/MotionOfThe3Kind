@@ -59,7 +59,7 @@ func main () {
 	st[22] = ".........*..........................|"
 	st[23] = ".........*..........................|"
 	st[24] = ".........*..........................|"
-	st[25] = ".........*..........................|"
+	st[25] = "....................................|"
 	st[26] = ">...................................|"
 	st[27] = ">....www...........................*|"  // X
 	st[28] = ">....www...........................*|"  // X
@@ -84,7 +84,7 @@ func main () {
 	st[47] = ">....mmm...........................*|"
 	st[48] = ">....mmm...........................*|"
 	st[49] = ">...................................|"
-	st[50] = ".........*..........................|"
+	st[50] = "....................................|"
 	st[51] = ".........*..........................|"
 	st[52] = ".........*..........................|"
 	st[53] = ".........*..........................|"
@@ -158,6 +158,8 @@ func UpdateAgent_Flow(agent int) {
 
 	C.CausalIndependence(true)
 
+	const delayed_start = 6000
+
 	for t := 0; t < C.MAXTIME; t++ {
 		
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
@@ -199,7 +201,7 @@ func UpdateAgent_Flow(agent int) {
 				// In this phase we can choose to make an offer to accept
 				// a neighbouring massID, we have to have received an update first
 
-				if AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
+				if t > delayed_start && AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
 					send.Phase = C.TAKE
 					send.Value = mass
 					C.ConditionalChannelOffer(agent,neighbour,send)
@@ -248,9 +250,9 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 		return 0
 	}
 
-	affinity := agent.V[d] * agent.V[d] - agent.Psi * agent.Psi
+	affinity := agent.Psi * agent.Psi // agent.V[d] * agent.V[d] - agent.Psi * agent.Psi
 
-	const psi_threshold = 1.0   // should really express in dimensionless vars..?
+	const psi_threshold = 20.0   // should really express in dimensionless vars..?
 
 	alignment := agent.Intent[0]
 		

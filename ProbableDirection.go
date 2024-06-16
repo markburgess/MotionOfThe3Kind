@@ -48,9 +48,9 @@ func main () {
 	st[11] = "....................................|"
 	st[12] = "....................................|"
 	st[13] = "....................................|"
-	st[14] = "...................................*|"
-	st[15] = "...................................*|"
-	st[16] = "...................................*|"
+	st[14] = "....................................|"
+	st[15] = "....................................|"
+	st[16] = "....................................|"
 	st[17] = "....................................|"
 	st[18] = "....................................|"
 	st[19] = "....................................|"
@@ -73,22 +73,22 @@ func main () {
 	st[36] = "....................................|"
 	st[37] = "....................................|"
 	st[38] = "....................................|"
-	st[39] = "....................................|"
-	st[40] = "....................................|"
+	st[39] = ">...................................|"
+	st[40] = ">...................................|"
 	st[41] = ">...................................|"
 	st[42] = ">...................................|"
-	st[43] = ">...................................|"
-	st[44] = ">...................................|"
-	st[45] = ">...................................|"
-	st[46] = ">..m m. ...........................*|"
-	st[47] = ">.. m..............................*|"
-	st[48] = ">..m m.............................*|"
-	st[49] = ">..................................*|"
+	st[43] = ">...m..............................*|"
+	st[44] = ">..m.m.............................*|"
+	st[45] = ">.m.m.m............................*|"
+	st[46] = ">m.m.m.m...........................*|"
+	st[47] = ">.m.m.m............................*|"
+	st[48] = ">..m.m.............................*|"
+	st[49] = ">...m..............................*|"
 	st[50] = ">...................................|"
 	st[51] = ">...................................|"
 	st[52] = ">...................................|"
 	st[53] = ">...................................|"
-	st[54] = ">...................................|"
+	st[54] = "....................................|"
 	st[55] = "....................................|"
 	st[56] = "....................................|"
 	st[57] = "....................................|"
@@ -157,8 +157,10 @@ func UpdateAgent_Flow(agent int) {
 
 	C.CausalIndependence(true)
 
+	const delayed_start = 800
+
 	for t := 0; t < C.MAXTIME; t++ {
-		
+
 		// Every pair of agents has a private directional channel that's not overwritten by anyone else
 		// Messages persist until they are read and cannot unseen
 
@@ -198,10 +200,12 @@ func UpdateAgent_Flow(agent int) {
 				// In this phase we can choose to make an offer to accept
 				// a neighbouring massID, we have to have received an update first
 
-				if AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
+				if t > delayed_start && AcceptingMass(C.AGENT[agent],d,dbar) > 0 {
 					send.Phase = C.TAKE
 					send.Value = mass
 					C.ConditionalChannelOffer(agent,neighbour,send)
+					// if I'm taking one, I shouldn't take another
+					continue
 				} else {
 					send.MassID = C.AGENT[agent].MassID
 					send.Value = C.AGENT[agent].Psi
@@ -247,9 +251,9 @@ func AcceptingMass(agent C.STAgent,d,dbar int) int {
 		return 0
 	}
 
-	affinity := agent.V[d] * agent.V[d] - agent.Psi * agent.Psi
+	affinity := agent.Psi * agent.Psi // agent.V[d] * agent.V[d] - agent.Psi * agent.Psi
 
-	const psi_threshold = 1.0   // should really express in dimensionless vars..?
+	const psi_threshold = 20.0   // keep this high to maintain approx conservation of M
 
 	alignment := agent.Intent[0]
 		

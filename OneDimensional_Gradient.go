@@ -116,7 +116,7 @@ func UpdateAgent_Flow(agent int) {
 
 func EvolvePsi(agent,direction int) float64 {
 
-	const mass = 15.0
+	const mass = 1.0
 	const dt = 0.01
 
 	grad := C.AGENT[agent].V[direction] - C.AGENT[agent].Psi
